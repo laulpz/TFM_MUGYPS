@@ -1,6 +1,6 @@
-# Asignador de Turnos de Enfermería
+# Planificación Turnos de Enfermería
 
-Esta aplicación web permite automatizar la planificación de turnos de enfermería en hospitales públicos, facilitando el trabajo de las supervisoras de enfermería. Desarrollada como parte de un Trabajo Fin de Máster (TFM) en Gestión Sanitaria.
+Esta aplicación web permite automatizar la planificación de turnos de enfermería en hospitales públicos, facilitando el trabajo de las supervisoras de enfermería. Desarrollada como parte de un Trabajo Fin de Máster (TFM) en Gestión Sanitaria (MUGYPS, Edición Fall 2024-2025).
 
 ## Características
 
@@ -33,5 +33,5 @@ Esta aplicación web permite automatizar la planificación de turnos de enfermer
 
 ## Autor
 
-Laura López Acedo — TFM Máster en Gestión Sanitaria
+Laura López Acedo — MSc Biomedical Engineer
 
