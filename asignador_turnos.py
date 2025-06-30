@@ -13,8 +13,8 @@ Esta herramienta permite asignar turnos de enfermería de forma automática a pa
 
 # Subida de archivos
 st.sidebar.header("1. Subir archivos")
-enfermeras_file = st.sidebar.file_uploader("Plantilla de enfermeras (.xlsx)", type=["xlsx"])
-demanda_file = st.sidebar.file_uploader("Demanda de turnos (.xlsx)", type=["xlsx"])
+enfermeras_file = st.sidebar.file_uploader("Enfermeras_Simuladas_TFM(.xlsx)", type=["xlsx"])
+demanda_file = st.sidebar.file_uploader("Demanda_Turnoss_TFM (.xlsx)", type=["xlsx"])
 
 if enfermeras_file and demanda_file:
     enfermeras = pd.read_excel(enfermeras_file)
