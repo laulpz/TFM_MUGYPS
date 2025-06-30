@@ -3,36 +3,38 @@ import pandas as pd
 import ast
 
 st.set_page_config(page_title="Asignador de Turnos de Enfermería", layout="wide")
-st.title("🚀 Asignador Automático de Turnos para Supervisoras")
+st.title("🩺 Asignador Automático de Turnos para Enfermería")
 
 st.markdown("""
-Esta herramienta permite asignar turnos de enfermería de forma automática a partir de:
-- Una plantilla de **enfermeras** con información de experiencia, jornada y disponibilidad.
-- Una tabla de **demanda** de turnos por día, unidad y franja horaria.
+Esta herramienta permite a las supervisoras de enfermería:
+- Subir datos del personal y demanda de turnos.
+- Ejecutar la asignación automática cumpliendo criterios básicos.
+- Visualizar y descargar la planilla generada.
+
+**Versión beta para pruebas en hospitales del SERMAS**.
 """)
 
-# Subida de archivos
-st.sidebar.header("1. Subir archivos")
-enfermeras_file = st.sidebar.file_uploader("Enfermeras_Simuladas_TFM(.xlsx)", type=["xlsx"])
-demanda_file = st.sidebar.file_uploader("Demanda_Turnos_TFM (.xlsx)", type=["xlsx"])
+st.sidebar.header("📂 Subir archivos de entrada")
+enfermeras_file = st.sidebar.file_uploader("Plantilla de enfermeras (.xlsx)", type=["xlsx"])
+demanda_file = st.sidebar.file_uploader("Demanda de turnos (.xlsx)", type=["xlsx"])
 
 if enfermeras_file and demanda_file:
     enfermeras = pd.read_excel(enfermeras_file)
     demanda = pd.read_excel(demanda_file)
 
-    # Conversión de cadena a lista
     enfermeras["Días_Indisponibles"] = enfermeras["Días_Indisponibles"].apply(lambda x: ast.literal_eval(str(x)))
 
-    # Mostrar tablas originales
-    st.subheader("📄 Enfermeras cargadas")
+    st.subheader("👩‍⚕️ Enfermeras cargadas")
     st.dataframe(enfermeras)
 
-    st.subheader("📅 Demanda de turnos")
+    st.subheader("📆 Demanda de turnos")
     st.dataframe(demanda)
 
-    # Inicializar asignaciones
-    st.sidebar.header("2. Ejecutar asignación")
-    if st.sidebar.button("Asignar turnos"):
+    st.sidebar.header("⚙️ Opciones de asignación")
+    aplicar_preferencia = st.sidebar.checkbox("Priorizar turno preferido", value=True)
+    aplicar_experiencia = st.sidebar.checkbox("Priorizar experiencia en caso de empate", value=True)
+
+    if st.sidebar.button("🚀 Ejecutar asignación"):
         asignaciones = []
         asignaciones_por_enfermera = {eid: 0 for eid in enfermeras["ID"]}
 
@@ -48,8 +50,15 @@ if enfermeras_file and demanda_file:
             ].copy()
 
             candidatas["Asignaciones"] = candidatas["ID"].map(asignaciones_por_enfermera)
-            candidatas = candidatas.sort_values(by=["Asignaciones", "Experiencia_Años"], ascending=[True, False])
 
+            orden = ["Asignaciones"]
+            if aplicar_preferencia:
+                candidatas["PrefiereEsteTurno"] = (candidatas["Preferencia_Turno"] == turno).astype(int)
+                orden.append("PrefiereEsteTurno")
+            if aplicar_experiencia:
+                orden.append("Experiencia_Años")
+
+            candidatas = candidatas.sort_values(by=orden, ascending=[True, False] * len(orden))
             seleccionadas = candidatas.head(requerido)
 
             for _, enf in seleccionadas.iterrows():
@@ -63,16 +72,15 @@ if enfermeras_file and demanda_file:
                 asignaciones_por_enfermera[enf["ID"]] += 1
 
         df_asignaciones = pd.DataFrame(asignaciones)
-        st.success("👍 Turnos asignados correctamente")
-        st.subheader("📆 Planilla generada")
+        st.success("✅ Turnos asignados correctamente")
+        st.subheader("📋 Planilla generada")
         st.dataframe(df_asignaciones)
 
-        # Descargar resultado
         st.download_button(
-            label="📂 Descargar planilla en Excel",
+            label="⬇️ Descargar planilla en Excel",
             data=df_asignaciones.to_excel(index=False, engine='openpyxl'),
             file_name="Asignaciones_Turnos.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         )
 else:
-    st.info("🔄 Esperando que subas los dos archivos de entrada.")
+    st.info("🔄 Por favor, sube los dos archivos de entrada para comenzar.")
