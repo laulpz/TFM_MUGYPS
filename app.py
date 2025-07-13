@@ -3,9 +3,12 @@ import pandas as pd
 import ast
 from datetime import datetime, timedelta
 from io import BytesIO
+from db_manager import init_db, cargar_horas, guardar_horas, guardar_asignaciones
 
 st.set_page_config(page_title="Asignador único de Turnos – SERMAS", layout="wide")
 st.title("🩺 Planificador de Turnos de Enfermería (SERMAS)")
+
+init_db()  # Inicializar base de datos
 
 st.markdown("""
 Este formulario permite planificar automáticamente los turnos de enfermería para 365 días, sin necesidad de generar archivos intermedios.
@@ -67,7 +70,9 @@ if file_staff and st.button("🚀 Ejecutar asignación"):
             })
     demand = pd.DataFrame(demanda)
 
-    staff_hours = {row.ID: 0 for _, row in staff.iterrows()}
+    # Cargar horas previas desde la base de datos
+    df_prev = cargar_horas()
+    staff_hours = dict(zip(df_prev["ID"], df_prev["Horas_Acumuladas"])) if not df_prev.empty else {row.ID: 0 for _, row in staff.iterrows()}
     staff_dates = {row.ID: [] for _, row in staff.iterrows()}
     assignments, uncovered = [], []
     demand_sorted = demand.sort_values(by="Fecha")
@@ -107,7 +112,8 @@ if file_staff and st.button("🚀 Ejecutar asignación"):
                     "Unidad": unidad,
                     "Turno": turno,
                     "ID_Enfermera": cand.ID,
-                    "Jornada": cand.Jornada
+                    "Jornada": cand.Jornada,
+                    "Horas_Acumuladas": staff_hours[cand.ID] + SHIFT_HOURS[turno]
                 })
                 staff_hours[cand.ID] += SHIFT_HOURS[turno]
                 staff_dates[cand.ID].append(fecha)
@@ -136,5 +142,15 @@ if file_staff and st.button("🚀 Ejecutar asignación"):
         st.download_button("⬇️ Descargar turnos sin cubrir", data=to_excel_bytes(df_uncov),
                            file_name="Turnos_Sin_Cubrir.xlsx",
                            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+
+    # Guardar en la base de datos
+    resumen_horas = pd.DataFrame([{"ID": id_, "Turno_Contrato": staff.loc[staff.ID == id_, "Turno_Contrato"].values[0],
+                                   "Horas_Acumuladas": horas} for id_, horas in staff_hours.items()])
+    guardar_horas(resumen_horas)
+    guardar_asignaciones(df_assign)
+
+    st.download_button("⬇️ Descargar resumen mensual de horas", data=to_excel_bytes(resumen_horas),
+                       file_name="Resumen_Horas_Acumuladas.xlsx",
+                       mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 else:
     st.info("🔄 Por favor, configure la demanda e introduzca la plantilla de personal para comenzar.")
