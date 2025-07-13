@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 import ast
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from io import BytesIO
 from db_manager import init_db, cargar_horas, guardar_horas, guardar_asignaciones
 
@@ -11,11 +11,12 @@ st.title("🩺 Planificador de Turnos de Enfermería (SERMAS)")
 init_db()  # Inicializar base de datos
 
 st.markdown("""
-Este formulario permite planificar automáticamente los turnos de enfermería para 365 días, sin necesidad de generar archivos intermedios.
+Este formulario permite planificar automáticamente los turnos de enfermería para un rango de fechas personalizado.
 
 1. Introduce la demanda semanal por turnos.
-2. Sube el archivo Excel de plantilla de personal.
-3. Ejecuta la asignación.
+2. Elige el rango de fechas.
+3. Sube el archivo Excel de plantilla de personal.
+4. Ejecuta la asignación.
 """)
 
 # ───────────────────────────── Demanda semanal ─────────────────────────────
@@ -33,6 +34,16 @@ for dia in dias_semana:
         demanda_por_dia[dia][turno] = cols[i].number_input(
             label=f"{turno}", min_value=0, max_value=20, value=3, key=f"{dia}_{turno}"
         )
+
+# ───────────────────────────── Rango de fechas ─────────────────────────────
+st.markdown("### Selecciona rango de fechas")
+col1, col2 = st.columns(2)
+fecha_inicio = col1.date_input("Fecha inicio planificación", value=date(2025, 1, 1))
+fecha_fin = col2.date_input("Fecha fin planificación", value=date(2025, 1, 31))
+
+if fecha_fin <= fecha_inicio:
+    st.warning("⚠️ La fecha fin debe ser posterior a la fecha inicio.")
+    st.stop()
 
 # ───────────────────────────── Subida plantilla ─────────────────────────────
 st.sidebar.header("📂 Suba plantilla de personal")
@@ -55,9 +66,12 @@ if file_staff and st.button("🚀 Ejecutar asignación"):
     st.subheader("👩‍⚕️ Personal cargado")
     st.dataframe(staff)
 
-    # Generar demanda anual
-    start_date = datetime(2025, 1, 1)
-    fechas = [start_date + timedelta(days=i) for i in range(365)]
+    # Generar demanda para el rango seleccionado
+    start_date = datetime.combine(fecha_inicio, datetime.min.time())
+    end_date = datetime.combine(fecha_fin, datetime.min.time())
+    num_days = (end_date - start_date).days + 1
+    fechas = [start_date + timedelta(days=i) for i in range(num_days)]
+
     demanda = []
     for fecha in fechas:
         dia_castellano = dias_semana[fecha.weekday()]
@@ -143,9 +157,17 @@ if file_staff and st.button("🚀 Ejecutar asignación"):
                            file_name="Turnos_Sin_Cubrir.xlsx",
                            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 
-    # Guardar en la base de datos
+    # Acumular horas y guardar en base de datos
     resumen_horas = pd.DataFrame([{"ID": id_, "Turno_Contrato": staff.loc[staff.ID == id_, "Turno_Contrato"].values[0],
                                    "Horas_Acumuladas": horas} for id_, horas in staff_hours.items()])
+
+    if not df_prev.empty:
+        resumen_horas = (
+            pd.concat([df_prev, resumen_horas])
+              .groupby(["ID", "Turno_Contrato"], as_index=False)
+              .Horas_Acumuladas.sum()
+        )
+
     guardar_horas(resumen_horas)
     guardar_asignaciones(df_assign)
 
