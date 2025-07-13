@@ -1,32 +1,26 @@
-# 🩺 Asignador Automático de Turnos para Enfermería (SERMAS)
+# 🩺 Planificador de Turnos de Enfermería – SERMAS
 
-Este proyecto forma parte del Trabajo Fin de Máster (TFM) del Máster en Gestión Sanitaria. Su objetivo es automatizar la planificación de turnos de enfermería en hospitales públicos del Servicio Madrileño de Salud (SERMAS), respetando las limitaciones normativas y mejorando la eficiencia administrativa.
+Proyecto desarrollado como parte del **Trabajo Fin de Máster (TFM) en Gestión Sanitaria**. Automatiza la planificación de turnos de enfermería en hospitales públicos del Servicio Madrileño de Salud (SERMAS) cumpliendo criterios normativos y reduciendo la carga administrativa de las supervisoras.
 
 ---
 
-## 📌 Funcionalidades
+## 🌟 Funcionalidades principales
 
-### 1. **Generador interactivo de demanda de turnos**
+| Paso | Acción | Descripción |
+|------|--------|-------------|
+| 1️⃣  | Configurar demanda semanal | En la interfaz web se define cuántas enfermeras se necesitan por turno (mañana, tarde, noche) para cada día de la semana. Esta configuración se aplica a los **365 días del año**. |
+| 2️⃣  | Subir plantilla de personal | Archivo Excel con columnas:<br/>`ID`, `Unidad_Asignada`, `Jornada`, `Turno_Contrato`, `Fechas_No_Disponibilidad`. |
+| 3️⃣  | Ejecutar asignación | El motor asigna turnos cumpliendo:<br/>• Máx. **8 días consecutivos**<br/>• Límite anual **1667,5 h** (diurnas) / **1490 h** (nocturnas)<br/>• Compatibilidad de unidad y turno<br/>• Fechas de no disponibilidad |
+| 4️⃣  | Descargar resultados | Descarga dos Excel:<br/>• `Planilla_Asignada.xlsx`<br/>• `Turnos_Sin_Cubrir.xlsx` (si aplica) |
 
-* Permite a las supervisoras definir cuántos profesionales necesitan por turno (mañana, tarde, noche) para cada día de la semana.
-* A partir de esta entrada, se genera automáticamente un archivo `.xlsx` con la demanda para los 365 días del año.
-* Pensado para simplificar la introducción de datos sin editar manualmente archivos largos.
+---
 
-### 2. **Asignador automático de turnos**
+## 🚀 Despliegue rápido en Streamlit Cloud
 
-* Asigna turnos a las enfermeras teniendo en cuenta:
-
-  * Jornada (completa o parcial)
-  * Turno contratado (mañana, tarde o noche)
-  * Fechas de no disponibilidad
-  * Límite anual de horas: 1667,5 h diurnas o 1490 h nocturnas
-  * Máximo de 8 jornadas consecutivas trabajadas
-  * Equilibrio en la carga de trabajo
-
-* Genera dos archivos Excel:
-
-  * 📋 `Planilla_Asignada.xlsx`: turnos asignados
-  * ⚠️ `Turnos_Sin_Cubrir.xlsx`: turnos que no se pudieron cubrir
+1. **Fork o clona** este repositorio en tu cuenta de GitHub.
+2. Ve a **[streamlit.io/cloud](https://streamlit.io/cloud)** y conecta tu cuenta de GitHub.
+3. Crea una nueva app seleccionando el repositorio y el archivo **`app.py`**.
+4. ¡Listo! Tendrás un enlace público para compartir con las supervisoras.
 
 ---
 
@@ -34,25 +28,17 @@ Este proyecto forma parte del Trabajo Fin de Máster (TFM) del Máster en Gesti�
 
 ```
 tfm-turnos/
-├── app.py                      # Script principal con pestañas de navegación
-├── generador_demanda.py       # Formulario interactivo para crear demanda
-├── asignador.py               # Motor de asignación de turnos
-├── requirements.txt           # Dependencias del proyecto
-└── README.md                  # Este archivo explicativo
+├── app.py              # Interfaz única (demanda + asignación)
+├── requirements.txt    # Dependencias
+├── README.md           # Este documento
+└── .gitignore          # Exclusiones de Git
 ```
 
----
-
-## 🚀 Cómo desplegar en Streamlit Cloud
-
-1. **Sube el proyecto a GitHub** (con esta estructura).
-2. Entra en [https://streamlit.io/cloud](https://streamlit.io/cloud) y conecta tu cuenta de GitHub.
-3. Selecciona el repositorio y el archivo `app.py` como script de entrada.
-4. ¡Listo! La app estará en línea para pruebas o uso real.
+> **Nota:** Los archivos `asignador.py` y `generador_demanda.py` se han fusionado en `app.py` para simplificar el flujo.
 
 ---
 
-## ⚙️ Requisitos
+## ⚙️ Dependencias
 
 ```
 streamlit>=1.32.0
@@ -60,18 +46,21 @@ pandas>=2.0.0
 openpyxl>=3.1.2
 ```
 
+Instala localmente con:
+
+```bash
+pip install -r requirements.txt
+streamlit run app.py
+```
+
 ---
 
-## 📬 Contacto
+## 🛡️ Licencia y uso
 
-Proyecto desarrollado por **Laura López Acedo** como parte del Máster en Gestión Sanitaria.
-
-Para más información o colaboración, contacta a través de [GitHub](https://github.com/).
+Todo el código y material están protegidos por **derechos de autor** (© 2025 Laura López Acedo). Queda prohibida su copia, modificación o distribución sin autorización expresa de la autora.
 
 ---
 
-## 🛡️ Licencia
+## ✉️ Contacto
 
-Este software no se distribuye libremente ni se autoriza su reproducción sin el consentimiento expreso de la autora. Todos los derechos reservados.
-
-
+Para dudas o colaboración, abre un *issue* en GitHub o escribe a **laura.lopez@example.com**.
