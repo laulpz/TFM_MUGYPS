@@ -46,6 +46,9 @@ if file_staff and file_demand:
             return [d.strip() for d in ast.literal_eval(str(cell))]
         except Exception:
             return [d.strip() for d in str(cell).split(',')]
+  
+
+    staff.columns = staff.columns.str.strip()  # Elimina espacios en los nombres de columna
 
     staff["Fechas_No_Disponibilidad"] = staff["Fechas_No_Disponibilidad"].apply(parse_dates)
 
