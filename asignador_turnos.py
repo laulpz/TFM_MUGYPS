@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import ast
 from datetime import datetime, timedelta
+from io import BytesIO
 
 st.set_page_config(page_title="Asignador de Turnos de Enfermería – Criterios SERMAS", layout="wide")
 st.title("🩺 Asignador Automático de Turnos (SERMAS)")
@@ -18,7 +19,7 @@ st.markdown("""
    - `Fecha`, `Unidad`, `Turno` (`Mañana`/`Tarde`/`Noche`), `Personal_Requerido`
 3. Pulse **Asignar turnos**. La herramienta:
    - Respeta las **8 jornadas consecutivas** máximas.
-   - Controla el **límite anual de horas** (1 667,5 h diurnas; 1 490 h nocturnas).
+   - Controla el **límite anual de horas** (1 667,5 h diurnas; 1 490 h nocturnas).
    - Ajusta asignaciones al **Turno_Contrato** y a las **fechas de indisponibilidad**.
 4. Descargue la planilla generada y, si hubiera, el listado de turnos sin cubrir.
 """)
@@ -72,7 +73,6 @@ if file_staff and file_demand:
             req = dem["Personal_Requerido"]
             assigned_count = 0
 
-            # Candidatas iniciales
             cands = staff[
                 (staff["Unidad_Asignada"] == unidad) &
                 (staff["Turno_Contrato"] == turno) &
@@ -80,10 +80,8 @@ if file_staff and file_demand:
             ].copy()
 
             if not cands.empty:
-                # Añadir horas acumuladas
                 cands["Horas_Asignadas"] = cands["ID"].map(staff_hours)
 
-                # Funciones de validación
                 def consecutive_ok(nurse_id):
                     fechas = staff_dates[nurse_id]
                     if not fechas:
@@ -110,7 +108,6 @@ if file_staff and file_demand:
                 cands = cands[cands.apply(hours_ok, axis=1)]
                 cands = cands.sort_values(by="Horas_Asignadas")
 
-            # Asignar si hay candidatas disponibles
             if not cands.empty:
                 for _, cand in cands.iterrows():
                     if assigned_count >= req:
@@ -126,19 +123,23 @@ if file_staff and file_demand:
                     staff_dates[cand.ID].append(fecha)
                     assigned_count += 1
 
-            # Registrar turnos sin cubrir
             if assigned_count < req:
                 uncovered.append({"Fecha": fecha, "Unidad": unidad, "Turno": turno, "Faltan": req - assigned_count})
 
-        # ──────────────────────────  Resultados  ──────────────────────────────
         df_assign = pd.DataFrame(assignments)
         st.success("✅ Asignación completada")
         st.subheader("📋 Planilla generada")
         st.dataframe(df_assign)
 
+        def to_excel_bytes(df):
+            output = BytesIO()
+            with pd.ExcelWriter(output, engine="openpyxl") as writer:
+                df.to_excel(writer, index=False)
+            return output.getvalue()
+
         st.download_button(
             label="⬇️ Descargar planilla (Excel)",
-            data=df_assign.to_excel(index=False, engine='openpyxl'),
+            data=to_excel_bytes(df_assign),
             file_name="Planilla_Asignada.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         )
@@ -149,7 +150,7 @@ if file_staff and file_demand:
             st.dataframe(df_uncov)
             st.download_button(
                 label="⬇️ Descargar turnos sin cubrir",
-                data=df_uncov.to_excel(index=False, engine='openpyxl'),
+                data=to_excel_bytes(df_uncov),
                 file_name="Turnos_Sin_Cubrir.xlsx",
                 mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
             )
