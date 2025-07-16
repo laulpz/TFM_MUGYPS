@@ -172,23 +172,6 @@ if st.session_state["asignacion_completada"]:
         st.download_button("⬇️ Descargar turnos sin cubrir", data=to_excel_bytes(st.session_state["df_uncov"]),
                            file_name="Turnos_Sin_Cubrir.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 
-    st.download_button("⬇️ Descargar resumen mensual de horas", data=to_excel_bytes(st.session_state["resumen_horas"]),
-                       file_name="Resumen_Horas_Acumuladas.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-
-    
-    st.markdown("### ✅ Confirmación de asignación")
-    aprobacion = st.radio("¿Deseas aprobar esta asignación?", ["Pendiente", "Aprobar", "Rehacer"], index=0)
-
-    if aprobacion == "Aprobar":
-        guardar_horas(st.session_state["resumen_horas"])
-        guardar_asignaciones(st.session_state["df_assign"])
-        st.success("📥 Datos guardados en la base de datos correctamente.")
-    elif aprobacion == "Rehacer":
-        for key in st.session_state.keys():
-            del st.session_state[key]
-        st.rerun()
-
-
     if st.button("🔄 Reiniciar aplicación"):
         for key in st.session_state.keys():
             del st.session_state[key]
