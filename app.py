@@ -9,7 +9,7 @@ from db_manager import init_db, cargar_horas, guardar_horas, guardar_asignacione
 st.set_page_config(page_title="Asignador único de Turnos – SERMAS", layout="wide")
 st.title("🩺 Planificador de Turnos de Enfermería (SERMAS)")
 
-init_db()  # Inicializar base de datos
+init_db()
 
 st.markdown("""
 Este formulario permite planificar automáticamente los turnos de enfermería para un rango de fechas personalizado.
@@ -20,14 +20,15 @@ Este formulario permite planificar automáticamente los turnos de enfermería pa
 4. Ejecuta la asignación.
 """)
 
-# Inicializar estados
 if "asignacion_completada" not in st.session_state:
     st.session_state["asignacion_completada"] = False
     st.session_state["df_assign"] = None
     st.session_state["df_uncov"] = None
     st.session_state["resumen_horas"] = None
+if "file_staff" not in st.session_state:
+    st.session_state["file_staff"] = None
 
-# ───────────────────────────── Demanda semanal ─────────────────────────────
+# ───────────────────────────── Demanda ─────────────────────────────
 st.subheader("📆 Configura la demanda semanal por turnos")
 unidad_seleccionada = st.selectbox("Selecciona la unidad hospitalaria", ["Medicina Interna", "UCI", "Urgencias", "Oncología"])
 dias_semana = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"]
@@ -38,13 +39,13 @@ for dia in dias_semana:
     st.markdown(f"**{dia}**")
     cols = st.columns(3)
     demanda_por_dia[dia] = {}
-    valor_default = 10 if dia in dias_semana[:5] else 8  # 10 entre semana, 8 fin de semana
+    valor_default = 10 if dia in dias_semana[:5] else 8
     for i, turno in enumerate(turnos):
         demanda_por_dia[dia][turno] = cols[i].number_input(
             label=f"{turno}", min_value=0, max_value=20, value=valor_default, key=f"{dia}_{turno}"
         )
 
-# ───────────────────────────── Rango de fechas ─────────────────────────────
+# ───────────────────────────── Fechas ─────────────────────────────
 st.markdown("### Selecciona rango de fechas")
 col1, col2 = st.columns(2)
 fecha_inicio = col1.date_input("Fecha inicio planificación", value=date(2025, 1, 1))
@@ -56,7 +57,10 @@ if fecha_fin <= fecha_inicio:
 
 # ───────────────────────────── Subida plantilla ─────────────────────────────
 st.sidebar.header("📂 Sube un Excel plantilla de personal")
-file_staff = st.sidebar.file_uploader("El archivo debe contener las siguientes columnas: ID, Unidad_Asignada. Jornada ", type=["xlsx"])
+file_input = st.sidebar.file_uploader("El archivo debe contener las siguientes columnas: ID, Unidad_Asignada. Jornada ", type=["xlsx"])
+if file_input:
+    st.session_state["file_staff"] = file_input
+file_staff = st.session_state["file_staff"]
 
 # ───────────────────────────── Asignación ─────────────────────────────
 if file_staff and st.button("🚀 Ejecutar asignación"):
@@ -144,9 +148,6 @@ if file_staff and st.button("🚀 Ejecutar asignación"):
     if not df_prev.empty:
         resumen_horas = pd.concat([df_prev, resumen_horas]).groupby(["ID", "Turno_Contrato"], as_index=False).Horas_Acumuladas.sum()
 
-    # guardar_horas y guardar_asignaciones solo se ejecutan si el usuario aprueba
-# Esto se maneja más abajo tras la aprobación
-
     st.session_state["asignacion_completada"] = True
     st.session_state["df_assign"] = df_assign
     st.session_state["df_uncov"] = df_uncov
@@ -171,6 +172,26 @@ if st.session_state["asignacion_completada"]:
         st.dataframe(st.session_state["df_uncov"])
         st.download_button("⬇️ Descargar turnos sin cubrir", data=to_excel_bytes(st.session_state["df_uncov"]),
                            file_name="Turnos_Sin_Cubrir.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+
+    st.markdown("### ✅ Confirmación de asignación")
+    aprobacion = st.radio("¿Deseas aprobar esta asignación?", ["Pendiente", "Aprobar", "Rehacer"], index=0)
+
+    if aprobacion == "Aprobar":
+        guardar_horas(st.session_state["resumen_horas"])
+        guardar_asignaciones(st.session_state["df_assign"])
+        st.success("📥 Datos guardados en la base de datos correctamente.")
+
+        st.subheader("🧾 Resumen mensual de horas acumuladas")
+        st.dataframe(st.session_state["resumen_horas"])
+        st.download_button("⬇️ Descargar resumen mensual de horas",
+                           data=to_excel_bytes(st.session_state["resumen_horas"]),
+                           file_name="Resumen_Horas_Acumuladas.xlsx",
+                           mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+
+    elif aprobacion == "Rehacer":
+        for key in st.session_state.keys():
+            del st.session_state[key]
+        st.rerun()
 
     if st.button("🔄 Reiniciar aplicación"):
         for key in st.session_state.keys():
