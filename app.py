@@ -202,7 +202,7 @@ if st.session_state["asignacion_completada"]:
                            data=to_excel_bytes(resumen_mensual),
                            file_name="Resumen_Mensual_Anual.xlsx",
                            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-st.download_button("⬇️ Descargar resumen mensual de horas",
+                           st.download_button("⬇️ Descargar resumen mensual de horas",
                            data=to_excel_bytes(st.session_state["resumen_horas"]),
                            file_name="Resumen_Horas_Acumuladas.xlsx",
                            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
