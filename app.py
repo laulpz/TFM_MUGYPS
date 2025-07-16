@@ -183,7 +183,26 @@ if st.session_state["asignacion_completada"]:
 
         st.subheader("🧾 Resumen mensual de horas acumuladas")
         st.dataframe(st.session_state["resumen_horas"])
-        st.download_button("⬇️ Descargar resumen mensual de horas",
+        
+        # Mostrar resumen mensual acumulado del año en curso
+        from db_manager import cargar_asignaciones
+        df_todas = cargar_asignaciones()
+        df_todas['Fecha'] = pd.to_datetime(df_todas['Fecha'])
+        df_anio = df_todas[df_todas['Fecha'].dt.year == datetime.now().year].copy()
+        df_anio['Mes'] = df_anio['Fecha'].dt.to_period('M')
+        resumen_mensual = df_anio.groupby(['ID_Enfermera', 'Mes'])['Horas_Acumuladas'].sum().reset_index()
+        resumen_mensual = resumen_mensual.rename(columns={
+            'ID_Enfermera': 'ID',
+            'Horas_Acumuladas': 'Horas_Mes'
+        })
+
+        st.subheader("📊 Resumen mensual del año en curso")
+        st.dataframe(resumen_mensual)
+        st.download_button("⬇️ Descargar resumen mensual del año",
+                           data=to_excel_bytes(resumen_mensual),
+                           file_name="Resumen_Mensual_Anual.xlsx",
+                           mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+st.download_button("⬇️ Descargar resumen mensual de horas",
                            data=to_excel_bytes(st.session_state["resumen_horas"]),
                            file_name="Resumen_Horas_Acumuladas.xlsx",
                            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
