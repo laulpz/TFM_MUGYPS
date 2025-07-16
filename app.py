@@ -1,11 +1,10 @@
 
 import streamlit as st
 import pandas as pd
+from db_manager import init_db, cargar_horas, guardar_horas, guardar_asignaciones
 import ast
 from datetime import datetime, timedelta, date
 from io import BytesIO
-from db_manager import init_db, cargar_horas, guardar_horas, guardar_asignaciones
-
 
 st.set_page_config(page_title="Asignador único de Turnos – SERMAS", layout="wide")
 st.title("🩺 Planificador de Turnos de Enfermería (SERMAS)")
@@ -183,7 +182,6 @@ if st.session_state["asignacion_completada"]:
                            file_name="Resumen_Horas_Acumuladas.xlsx",
                            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 
-        df_todas["Fecha"] = pd.to_datetime(df_todas["Fecha"])
         resumen_mensual = resumen_mensual.rename(columns={"ID_Enfermera": "ID", "Horas_Acumuladas": "Horas_Mes"})
 
         st.dataframe(resumen_mensual)
