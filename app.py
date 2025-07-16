@@ -197,6 +197,27 @@ if st.session_state["asignacion_completada"]:
                            file_name="Resumen_Mensual_Anual.xlsx",
                            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 
+
+        # Resumen mensual detallado del año en curso con columnas por mes
+        df_todas = cargar_asignaciones()
+        df_todas["Fecha"] = pd.to_datetime(df_todas["Fecha"])
+        df_anio = df_todas[df_todas["Fecha"].dt.year == datetime.now().year].copy()
+        df_anio["Mes"] = df_anio["Fecha"].dt.strftime('%B')  # Nombre del mes
+        resumen_pivot = df_anio.pivot_table(
+            index=["ID_Enfermera", "Jornada"],
+            columns="Mes",
+            values="Horas_Acumuladas",
+            aggfunc="sum",
+            fill_value=0
+        ).reset_index()
+
+        st.subheader("📊 Resumen mensual pivotado por enfermera")
+        st.dataframe(resumen_pivot)
+        st.download_button("⬇️ Descargar resumen mensual pivotado",
+                           data=to_excel_bytes(resumen_pivot),
+                           file_name="Resumen_Pivotado_Anual.xlsx",
+                           mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+
     elif aprobacion == "Rehacer":
         st.session_state["asignacion_completada"] = False
         st.rerun()
