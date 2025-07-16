@@ -4,7 +4,7 @@ import pandas as pd
 import ast
 from datetime import datetime, timedelta, date
 from io import BytesIO
-from db_manager import init_db, cargar_horas, guardar_horas, guardar_asignaciones
+from db_manager import init_db, cargar_horas, guardar_horas, guardar_asignaciones, cargar_asignaciones
 
 st.set_page_config(page_title="Asignador único de Turnos – SERMAS", layout="wide")
 st.title("🩺 Planificador de Turnos de Enfermería (SERMAS)")
@@ -28,7 +28,6 @@ if "asignacion_completada" not in st.session_state:
 if "file_staff" not in st.session_state:
     st.session_state["file_staff"] = None
 
-# ───────────────────────────── Demanda ─────────────────────────────
 st.subheader("📆 Configura la demanda semanal por turnos")
 unidad_seleccionada = st.selectbox("Selecciona la unidad hospitalaria", ["Medicina Interna", "UCI", "Urgencias", "Oncología"])
 dias_semana = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"]
@@ -45,7 +44,6 @@ for dia in dias_semana:
             label=f"{turno}", min_value=0, max_value=20, value=valor_default, key=f"{dia}_{turno}"
         )
 
-# ───────────────────────────── Fechas ─────────────────────────────
 st.markdown("### Selecciona rango de fechas")
 col1, col2 = st.columns(2)
 fecha_inicio = col1.date_input("Fecha inicio planificación", value=date(2025, 1, 1))
@@ -55,14 +53,12 @@ if fecha_fin <= fecha_inicio:
     st.warning("⚠️ La fecha fin debe ser posterior a la fecha inicio.")
     st.stop()
 
-# ───────────────────────────── Subida plantilla ─────────────────────────────
 st.sidebar.header("📂 Sube un Excel plantilla de personal")
 file_input = st.sidebar.file_uploader("El archivo debe contener las siguientes columnas: ID, Unidad_Asignada. Jornada ", type=["xlsx"])
 if file_input:
     st.session_state["file_staff"] = file_input
 file_staff = st.session_state["file_staff"]
 
-# ───────────────────────────── Asignación ─────────────────────────────
 if file_staff and st.button("🚀 Ejecutar asignación"):
     SHIFT_HOURS = {"Mañana": 7, "Tarde": 7, "Noche": 10}
     MAX_HOURS = {"Mañana": 1667.5, "Tarde": 1667.5, "Noche": 1490}
@@ -121,8 +117,7 @@ if file_staff and st.button("🚀 Ejecutar asignación"):
                         else: break
                 return True
             cands = cands[cands["ID"].apply(consecutive_ok)]
-            cands = cands[cands.apply(lambda row: row.Horas_Asignadas + SHIFT_HOURS[turno] <= MAX_HOURS[row.Turno_Contrato], axis=1)]
-            cands = cands.sample(frac=1).sort_values(by="Horas_Asignadas")  # aleatoriedad controlada
+            cands = cands.sample(frac=1).sort_values(by="Horas_Asignadas")
         if not cands.empty:
             for _, cand in cands.iterrows():
                 if assigned_count >= req: break
@@ -153,7 +148,6 @@ if file_staff and st.button("🚀 Ejecutar asignación"):
     st.session_state["df_uncov"] = df_uncov
     st.session_state["resumen_horas"] = resumen_horas
 
-# Mostrar resultados si hay asignación previa
 if st.session_state["asignacion_completada"]:
     st.success("✅ Asignación completada")
     st.dataframe(st.session_state["df_assign"])
@@ -183,18 +177,18 @@ if st.session_state["asignacion_completada"]:
 
         st.subheader("🧾 Resumen mensual de horas acumuladas")
         st.dataframe(st.session_state["resumen_horas"])
-        
-        # Mostrar resumen mensual acumulado del año en curso
-        from db_manager import cargar_asignaciones
+        st.download_button("⬇️ Descargar resumen mensual de horas",
+                           data=to_excel_bytes(st.session_state["resumen_horas"]),
+                           file_name="Resumen_Horas_Acumuladas.xlsx",
+                           mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+
+        # Resumen mensual del año en curso
         df_todas = cargar_asignaciones()
-        df_todas['Fecha'] = pd.to_datetime(df_todas['Fecha'])
-        df_anio = df_todas[df_todas['Fecha'].dt.year == datetime.now().year].copy()
-        df_anio['Mes'] = df_anio['Fecha'].dt.to_period('M')
-        resumen_mensual = df_anio.groupby(['ID_Enfermera', 'Mes'])['Horas_Acumuladas'].sum().reset_index()
-        resumen_mensual = resumen_mensual.rename(columns={
-            'ID_Enfermera': 'ID',
-            'Horas_Acumuladas': 'Horas_Mes'
-        })
+        df_todas["Fecha"] = pd.to_datetime(df_todas["Fecha"])
+        df_anio = df_todas[df_todas["Fecha"].dt.year == datetime.now().year].copy()
+        df_anio["Mes"] = df_anio["Fecha"].dt.to_period("M")
+        resumen_mensual = df_anio.groupby(["ID_Enfermera", "Mes"])["Horas_Acumuladas"].sum().reset_index()
+        resumen_mensual = resumen_mensual.rename(columns={"ID_Enfermera": "ID", "Horas_Acumuladas": "Horas_Mes"})
 
         st.subheader("📊 Resumen mensual del año en curso")
         st.dataframe(resumen_mensual)
@@ -202,27 +196,22 @@ if st.session_state["asignacion_completada"]:
                            data=to_excel_bytes(resumen_mensual),
                            file_name="Resumen_Mensual_Anual.xlsx",
                            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-st.download_button("⬇️ Descargar resumen mensual de horas",
-                           data=to_excel_bytes(st.session_state["resumen_horas"]),
-                           file_name="Resumen_Horas_Acumuladas.xlsx",
-                           mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 
-elif aprobacion == "Rehacer":
-    st.session_state["asignacion_completada"] = False
-    st.rerun()
+    elif aprobacion == "Rehacer":
+        st.session_state["asignacion_completada"] = False
+        st.rerun()
 
     if st.button("🔄 Reiniciar aplicación"):
-        for key in st.session_state.keys():
+        for key in list(st.session_state.keys()):
             del st.session_state[key]
         st.rerun()
 
-
-# ───────────────────────────── Reseteo de Base de Datos ─────────────────────────────
+# Botón de reseteo de base de datos
 st.sidebar.markdown("---")
 if st.sidebar.button("🗑️ Resetear base de datos"):
-    from db_manager import reset_db  # Asegúrate de implementar esta función
+    from db_manager import reset_db
     reset_db()
     st.sidebar.success("✅ Base de datos reseteada correctamente.")
-    for key in st.session_state.keys():
+    for key in list(st.session_state.keys()):
         del st.session_state[key]
     st.rerun()
