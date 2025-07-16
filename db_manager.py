@@ -1,23 +1,22 @@
+
 import sqlite3
 import pandas as pd
 from pathlib import Path
 
-DB_PATH = Path("turnos_sermas.db")
+DB_PATH = Path("turnos.db")
 
-# ──────────────────────── CREACIÓN Y CONEXIÓN ─────────────────────────
 def init_db():
-    with sqlite3.connect(DB_PATH) as conn:
-        c = conn.cursor()
-        # Tabla para acumular horas
-        c.execute("""
-        CREATE TABLE IF NOT EXISTS horas_acumuladas (
-            ID TEXT PRIMARY KEY,
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS horas (
+            ID TEXT,
             Turno_Contrato TEXT,
-            Horas_Acumuladas REAL
+            Horas_Acumuladas REAL,
+            PRIMARY KEY (ID, Turno_Contrato)
         )
-        """)
-        # Tabla para guardar asignaciones mensuales
-        c.execute("""
+    ''')
+    c.execute('''
         CREATE TABLE IF NOT EXISTS asignaciones (
             Fecha TEXT,
             Unidad TEXT,
@@ -26,23 +25,31 @@ def init_db():
             Jornada TEXT,
             Horas_Acumuladas REAL
         )
-        """)
-        conn.commit()
+    ''')
+    conn.commit()
+    conn.close()
 
-# ──────────────────────── FUNCIONES DE GUARDADO ───────────────────────
-def guardar_horas(df_resumen):
-    with sqlite3.connect(DB_PATH) as conn:
-        df_resumen.to_sql("horas_acumuladas", conn, if_exists="replace", index=False)
-
-def guardar_asignaciones(df_planilla):
-    with sqlite3.connect(DB_PATH) as conn:
-        df_planilla.to_sql("asignaciones", conn, if_exists="append", index=False)
-
-# ──────────────────────── LECTURA DE HORAS PREVIAS ────────────────────
 def cargar_horas():
-    with sqlite3.connect(DB_PATH) as conn:
-        try:
-            df = pd.read_sql("SELECT * FROM horas_acumuladas", conn)
-            return df
-        except Exception:
-            return pd.DataFrame(columns=["ID", "Turno_Contrato", "Horas_Acumuladas"])
+    conn = sqlite3.connect(DB_PATH)
+    df = pd.read_sql_query("SELECT * FROM horas", conn)
+    conn.close()
+    return df
+
+def guardar_horas(df):
+    conn = sqlite3.connect(DB_PATH)
+    df.to_sql("horas", conn, if_exists="replace", index=False)
+    conn.close()
+
+def guardar_asignaciones(df):
+    conn = sqlite3.connect(DB_PATH)
+    df.to_sql("asignaciones", conn, if_exists="append", index=False)
+    conn.close()
+
+def reset_db():
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    c.execute("DROP TABLE IF EXISTS horas")
+    c.execute("DROP TABLE IF EXISTS asignaciones")
+    conn.commit()
+    conn.close()
+    init_db()
