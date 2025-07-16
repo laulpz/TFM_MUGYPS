@@ -122,7 +122,7 @@ if file_staff and st.button("🚀 Ejecutar asignación"):
                 return True
             cands = cands[cands["ID"].apply(consecutive_ok)]
             cands = cands[cands.apply(lambda row: row.Horas_Asignadas + SHIFT_HOURS[turno] <= MAX_HOURS[row.Turno_Contrato], axis=1)]
-            cands = cands.sort_values(by="Horas_Asignadas")
+            cands = cands.sample(frac=1).sort_values(by="Horas_Asignadas")  # aleatoriedad controlada
         if not cands.empty:
             for _, cand in cands.iterrows():
                 if assigned_count >= req: break
@@ -189,8 +189,7 @@ if st.session_state["asignacion_completada"]:
                            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 
     elif aprobacion == "Rehacer":
-        for key in st.session_state.keys():
-            del st.session_state[key]
+        st.session_state["asignacion_completada"] = False
         st.rerun()
 
     if st.button("🔄 Reiniciar aplicación"):
