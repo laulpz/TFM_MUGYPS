@@ -32,7 +32,7 @@ for dia in dias_semana:
     demanda_por_dia[dia] = {}
     for i, turno in enumerate(turnos):
         demanda_por_dia[dia][turno] = cols[i].number_input(
-            label=f"{turno}", min_value=0, max_value=20, value=3, key=f"{dia}_{turno}"
+            label=f"{turno}", min_value=0, max_value=20, value=5, key=f"{dia}_{turno}"
         )
 
 # ───────────────────────────── Rango de fechas ─────────────────────────────
