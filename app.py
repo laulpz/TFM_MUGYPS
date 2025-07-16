@@ -182,7 +182,6 @@ if st.session_state["asignacion_completada"]:
                            file_name="Resumen_Horas_Acumuladas.xlsx",
                            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 
-        # Resumen mensual del año en curso
         df_todas = cargar_asignaciones()
         df_todas["Fecha"] = pd.to_datetime(df_todas["Fecha"])
         df_anio = df_todas[df_todas["Fecha"].dt.year == datetime.now().year].copy()
@@ -190,11 +189,9 @@ if st.session_state["asignacion_completada"]:
         resumen_mensual = df_anio.groupby(["ID_Enfermera", "Mes"])["Horas_Acumuladas"].sum().reset_index()
         resumen_mensual = resumen_mensual.rename(columns={"ID_Enfermera": "ID", "Horas_Acumuladas": "Horas_Mes"})
 
-        st.subheader("📊 Resumen mensual del año en curso")
         st.dataframe(resumen_mensual)
         st.download_button("⬇️ Descargar resumen mensual del año",
                            data=to_excel_bytes(resumen_mensual),
-                           file_name="Resumen_Mensual_Anual.xlsx",
                            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 
 
