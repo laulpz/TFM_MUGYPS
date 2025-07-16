@@ -44,12 +44,6 @@ def guardar_asignaciones(df):
     df.to_sql("asignaciones", conn, if_exists="append", index=False)
     conn.close()
 
-def cargar_asignaciones():
-    conn = sqlite3.connect(DB_PATH)
-    df = pd.read_sql_query("SELECT * FROM asignaciones", conn)
-    conn.close()
-    return df
-
 def reset_db():
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
@@ -58,3 +52,4 @@ def reset_db():
     conn.commit()
     conn.close()
     init_db()
+
