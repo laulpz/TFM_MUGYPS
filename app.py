@@ -1,4 +1,3 @@
-
 import streamlit as st
 import pandas as pd
 import ast
@@ -47,8 +46,8 @@ if fecha_fin <= fecha_inicio:
     st.stop()
 
 # ───────────────────────────── Subida plantilla ─────────────────────────────
-st.sidebar.header("📂 Suba plantilla de personal")
-file_staff = st.sidebar.file_uploader("Plantilla de personal (.xlsx)", type=["xlsx"])
+st.sidebar.header("📂 Sube un Excel plantilla de personal")
+file_staff = st.sidebar.file_uploader("El archivo debe contener las siguientes columnas: ID, Unidad_Asignada. Jornada ", type=["xlsx"])
 
 # ───────────────────────────── Asignación ─────────────────────────────
 if file_staff and st.button("🚀 Ejecutar asignación"):
