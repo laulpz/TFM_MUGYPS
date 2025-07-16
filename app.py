@@ -1,10 +1,10 @@
 
 import streamlit as st
 import pandas as pd
-from db_manager import init_db, cargar_horas, guardar_horas, guardar_asignaciones
 import ast
 from datetime import datetime, timedelta, date
 from io import BytesIO
+from db_manager import init_db, cargar_horas, guardar_horas, guardar_asignaciones, cargar_asignaciones
 
 st.set_page_config(page_title="Asignador único de Turnos – SERMAS", layout="wide")
 st.title("🩺 Planificador de Turnos de Enfermería (SERMAS)")
@@ -182,34 +182,38 @@ if st.session_state["asignacion_completada"]:
                            file_name="Resumen_Horas_Acumuladas.xlsx",
                            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 
+        # Resumen mensual del año en curso
+        df_todas = cargar_asignaciones()
+        df_todas["Fecha"] = pd.to_datetime(df_todas["Fecha"])
+        df_anio = df_todas[df_todas["Fecha"].dt.year == datetime.now().year].copy()
+        df_anio["Mes"] = df_anio["Fecha"].dt.to_period("M")
+        resumen_mensual = df_anio.groupby(["ID_Enfermera", "Mes"])["Horas_Acumuladas"].sum().reset_index()
         resumen_mensual = resumen_mensual.rename(columns={"ID_Enfermera": "ID", "Horas_Acumuladas": "Horas_Mes"})
 
+        st.subheader("📊 Resumen mensual del año en curso")
         st.dataframe(resumen_mensual)
         st.download_button("⬇️ Descargar resumen mensual del año",
                            data=to_excel_bytes(resumen_mensual),
+                           file_name="Resumen_Mensual_Anual.xlsx",
                            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 
 
-        # Resumen mensual pivotado SOLO con asignación actual aprobada (sin base de datos)
+        # Resumen mensual pivotado SOLO con asignación actual, con meses en español
         df_actual = st.session_state["df_assign"].copy()
         df_actual["Fecha"] = pd.to_datetime(df_actual["Fecha"])
         df_actual["Mes_Num"] = df_actual["Fecha"].dt.month
-        df_actual["Mes"] = df_actual["Mes_Num"].apply(lambda x: ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
-                                                                 "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"][x - 1])
-
-        df_actual["Horas_Turno"] = df_actual.groupby("ID_Enfermera")["Horas_Acumuladas"].diff().fillna(df_actual["Horas_Acumuladas"])
+        df_actual["Mes"] = df_actual["Mes_Num"].apply(lambda x: ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'][x - 1])
 
         resumen_pivot = df_actual.pivot_table(
             index=["ID_Enfermera", "Jornada"],
             columns="Mes",
-            values="Horas_Turno",
+            values="Horas_Acumuladas",
             aggfunc="sum",
             fill_value=0
         ).reset_index()
 
-        resumen_pivot = resumen_pivot[["ID_Enfermera", "Jornada"] + [mes for mes in ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
-                                                                                      "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"]
-                                                                     if mes in resumen_pivot.columns]]
+        # Ordenar columnas cronológicamente según meses en español
+        resumen_pivot = resumen_pivot[["ID_Enfermera", "Jornada"] + [mes for mes in ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'] if mes in resumen_pivot.columns]]
 
         st.subheader("📊 Resumen mensual (asignación actual)")
         st.dataframe(resumen_pivot)
