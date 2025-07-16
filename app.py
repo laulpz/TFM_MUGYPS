@@ -182,11 +182,8 @@ if st.session_state["asignacion_completada"]:
                            file_name="Resumen_Horas_Acumuladas.xlsx",
                            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 
-        resumen_mensual = resumen_mensual.rename(columns={"ID_Enfermera": "ID", "Horas_Acumuladas": "Horas_Mes"})
 
-        st.dataframe(resumen_mensual)
         st.download_button("⬇️ Descargar resumen mensual del año",
-                           data=to_excel_bytes(resumen_mensual),
                            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 
 
