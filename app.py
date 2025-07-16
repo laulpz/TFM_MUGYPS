@@ -207,9 +207,9 @@ st.download_button("⬇️ Descargar resumen mensual de horas",
                            file_name="Resumen_Horas_Acumuladas.xlsx",
                            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 
-    elif aprobacion == "Rehacer":
-        st.session_state["asignacion_completada"] = False
-        st.rerun()
+elif aprobacion == "Rehacer":
+    st.session_state["asignacion_completada"] = False
+    st.rerun()
 
     if st.button("🔄 Reiniciar aplicación"):
         for key in st.session_state.keys():
