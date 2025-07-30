@@ -60,8 +60,8 @@ if file_input:
 file_staff = st.session_state["file_staff"]
 
 if file_staff and st.button("🚀 Ejecutar asignación"):
-    SHIFT_HOURS = {"Mañana": 7, "Tarde": 7, "Noche": 10}
-    MAX_HOURS = {"Mañana": 1667.5, "Tarde": 1667.5, "Noche": 1490}
+    SHIFT_HOURS = {"Mañana": 7.5, "Tarde": 7.5, "Noche": 10}
+    MAX_HOURS = {"Mañana": 1642.5, "Tarde": 1642.5, "Noche": 1470}
 
     staff = pd.read_excel(file_staff)
     staff.columns = staff.columns.str.strip()
@@ -93,7 +93,8 @@ if file_staff and st.button("🚀 Ejecutar asignación"):
 
     df_prev = cargar_horas()
     staff_hours = dict(zip(df_prev["ID"], df_prev["Horas_Acumuladas"])) if not df_prev.empty else {row.ID: 0 for _, row in staff.iterrows()}
-    staff_dates = {row.ID: [] for _, row in staff.iterrows()}
+    staff_jornadas = dict.fromkeys(staff["ID"], 0)
+staff_dates = {row.ID: [] for _, row in staff.iterrows()}
     assignments, uncovered = [], []
     demand_sorted = demand.sort_values(by="Fecha")
 
@@ -103,6 +104,14 @@ if file_staff and st.button("🚀 Ejecutar asignación"):
         cands = staff[(staff["Unidad_Asignada"] == unidad) & (staff["Turno_Contrato"] == turno) & (~staff["Fechas_No_Disponibilidad"].apply(lambda lst: fecha in lst))].copy()
         if not cands.empty:
             cands["Horas_Asignadas"] = cands["ID"].map(staff_hours)
+            cands["Jornadas_Asignadas"] = cands["ID"].map(lambda x: staff_jornadas[x])
+
+            def jornada_ok(row):
+                max_jornadas = 219 if row.Turno_Contrato in ["Mañana", "Tarde"] else 147
+                return row.Jornadas_Asignadas < max_jornadas
+
+            cands = cands[cands.apply(jornada_ok, axis=1)]
+
             def consecutive_ok(nurse_id):
                 fechas = staff_dates[nurse_id]
                 if not fechas: return True
@@ -130,6 +139,7 @@ if file_staff and st.button("🚀 Ejecutar asignación"):
                     "Horas_Acumuladas": staff_hours[cand.ID] + SHIFT_HOURS[turno]
                 })
                 staff_hours[cand.ID] += SHIFT_HOURS[turno]
+                staff_jornadas[cand.ID] += 1
                 staff_dates[cand.ID].append(fecha)
                 assigned_count += 1
         if assigned_count < req:
