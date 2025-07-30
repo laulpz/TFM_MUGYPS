@@ -220,3 +220,5 @@ if st.sidebar.button("🗑️ Resetear base de datos"):
     st.rerun()
 
 
+
+
