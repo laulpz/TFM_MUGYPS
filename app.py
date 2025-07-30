@@ -53,8 +53,8 @@ if fecha_fin <= fecha_inicio:
     st.warning("⚠️ La fecha fin debe ser posterior a la fecha inicio.")
     st.stop()
 
-st.sidebar.header("📂 Sube un Excel plantilla de personal")
-file_input = st.sidebar.file_uploader("El archivo debe contener las siguientes columnas: ID, Unidad_Asignada. Jornada ", type=["xlsx"])
+st.sidebar.header("📂 Carga tu Excel con la plantilla de enfermería")
+file_input = st.sidebar.file_uploader("El archivo debe contener las siguientes columnas: ", type=["xlsx"])
 if file_input:
     st.session_state["file_staff"] = file_input
 file_staff = st.session_state["file_staff"]
@@ -145,7 +145,7 @@ if file_staff and st.button("🚀 Ejecutar asignación"):
 } for id_, horas in staff_hours.items()])
 
     if not df_prev.empty:
-        resumen_horas = pd.concat([df_prev, resumen_horas]).groupby(["ID", "Turno_Contrato"], as_index=False).agg({"Horas_Acumuladas": "sum", "Jornadas": "sum"})
+        resumen_horas = pd.concat([df_prev, resumen_horas]).groupby(["ID", "Turno"], as_index=False).agg({"Horas acumuladas": "sum", "Jornadas trabajadas": "sum"})
 
     st.session_state["asignacion_completada"] = True
     st.session_state["df_assign"] = df_assign
@@ -192,7 +192,7 @@ if st.session_state["asignacion_completada"]:
         df_anio = df_todas[df_todas["Fecha"].dt.year == datetime.now().year].copy()
         df_anio["Mes"] = df_anio["Fecha"].dt.to_period("M")
         resumen_mensual = df_anio.groupby(["ID_Enfermera", "Mes"])["Horas_Acumuladas"].sum().reset_index()
-        resumen_mensual = resumen_mensual.rename(columns={"ID_Enfermera": "ID", "Horas_Acumuladas": "Horas_Mes"})
+        resumen_mensual = resumen_mensual.rename(columns={"ID_Enfermera": "ID", "Horas_Acumuladas": "Horas totales mes"})
 
         st.subheader("📊 Resumen del año en curso")
         st.dataframe(resumen_mensual)
