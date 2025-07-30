@@ -38,7 +38,7 @@ for dia in dias_semana:
     st.markdown(f"**{dia}**")
     cols = st.columns(3)
     demanda_por_dia[dia] = {}
-    valor_default = 10 if dia in dias_semana[:5] else 4
+    valor_default = 8 if dia in dias_semana[:5] else 4
     for i, turno in enumerate(turnos):
         demanda_por_dia[dia][turno] = cols[i].number_input(
             label=f"{turno}", min_value=0, max_value=20, value=valor_default, key=f"{dia}_{turno}"
@@ -179,11 +179,11 @@ if st.session_state["asignacion_completada"]:
         guardar_asignaciones(st.session_state["df_assign"])
         st.success("📥 Datos guardados en la base de datos correctamente.")
 
-        st.subheader("🧾 Resumen mensual de horas acumuladas")
+        st.subheader("🧾 Resumen Asignación Mensual por profesional")
         st.dataframe(st.session_state["resumen_horas"])
-        st.download_button("⬇️ Descargar resumen mensual de horas",
+        st.download_button("⬇️ Descargar resumen mensual por profesional",
                            data=to_excel_bytes(st.session_state["resumen_horas"]),
-                           file_name="Resumen_Horas_Acumuladas.xlsx",
+                           file_name="Resumen_Mensual_Profesional.xlsx",
                            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 
         # Resumen mensual del año en curso
@@ -194,11 +194,11 @@ if st.session_state["asignacion_completada"]:
         resumen_mensual = df_anio.groupby(["ID_Enfermera", "Mes"])["Horas_Acumuladas"].sum().reset_index()
         resumen_mensual = resumen_mensual.rename(columns={"ID_Enfermera": "ID", "Horas_Acumuladas": "Horas_Mes"})
 
-        st.subheader("📊 Resumen mensual del año en curso")
+        st.subheader("📊 Resumen del año en curso")
         st.dataframe(resumen_mensual)
-        st.download_button("⬇️ Descargar resumen mensual del año",
+        st.download_button("⬇️ Descargar resumen del año en curso",
                            data=to_excel_bytes(resumen_mensual),
-                           file_name="Resumen_Mensual_Anual.xlsx",
+                           file_name="Resumen_Anual.xlsx",
                            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 
 
