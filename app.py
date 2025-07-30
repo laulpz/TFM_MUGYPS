@@ -186,20 +186,17 @@ if st.session_state["asignacion_completada"]:
                            file_name="Resumen_Mensual_Profesional.xlsx",
                            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 
-        # Resumen mensual del año en curso
-        df_todas = cargar_asignaciones()
-        df_todas["Fecha"] = pd.to_datetime(df_todas["Fecha"])
-        df_anio = df_todas[df_todas["Fecha"].dt.year == datetime.now().year].copy()
-        df_anio["Mes"] = df_anio["Fecha"].dt.to_period("M")
-        resumen_mensual = df_anio.groupby(["ID_Enfermera", "Mes"], as_index=False)["Horas_Acumuladas"].sum()
+        
+        # Recalcular resumen anual únicamente desde la asignación actual
+        df_actual = st.session_state["df_assign"].copy()
+        df_actual["Fecha"] = pd.to_datetime(df_actual["Fecha"])
+        df_actual["Mes"] = df_actual["Fecha"].dt.to_period("M")
+        resumen_mensual = df_actual.groupby(["ID_Enfermera", "Mes"], as_index=False)["Horas_Acumuladas"].sum()
         resumen_mensual = resumen_mensual.rename(columns={"ID_Enfermera": "ID", "Horas_Acumuladas": "Horas totales mes"})
 
         st.subheader("📊 Resumen del año en curso")
         st.dataframe(resumen_mensual)
-        st.download_button("⬇️ Descargar resumen del año en curso",
-                           data=to_excel_bytes(resumen_mensual),
-                           file_name="Resumen_Anual.xlsx",
-                           mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+        st.download_button("⬇️ Descargar resumen del año en curso", data=to_excel_bytes(resumen_mensual), file_name="Resumen_Anual.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 
 
         
