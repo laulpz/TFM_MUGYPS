@@ -1,4 +1,5 @@
 
+   
 import streamlit as st
 import pandas as pd
 import ast
@@ -218,6 +219,7 @@ if st.sidebar.button("🗑️ Resetear base de datos"):
     for key in list(st.session_state.keys()):
         del st.session_state[key]
     st.rerun()
+
 
 
 
