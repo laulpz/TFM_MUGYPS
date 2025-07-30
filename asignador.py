@@ -23,8 +23,8 @@ def ejecutar_asignador():
     4. Descargue la planilla generada y, si hubiera, el listado de turnos sin cubrir.
     """)
 
-    SHIFT_HOURS = {"Mañana": 7, "Tarde": 7, "Noche": 10}
-    MAX_HOURS = {"Mañana": 1667.5, "Tarde": 1667.5, "Noche": 1490}
+    SHIFT_HOURS = {"Mañana": 7.5, "Tarde": 7.5, "Noche": 10}
+    MAX_HOURS = {"Mañana": 1642.5, "Tarde": 1642.5, "Noche": 1470}
 
     st.sidebar.header("📂 Suba los archivos de entrada")
     file_staff = st.sidebar.file_uploader("Plantilla de personal (.xlsx)", type=["xlsx"])
@@ -75,6 +75,14 @@ def ejecutar_asignador():
 
                 if not cands.empty:
                     cands["Horas_Asignadas"] = cands["ID"].map(staff_hours)
+            cands["Jornadas_Asignadas"] = cands["ID"].map(lambda x: staff_dates[x].__len__())
+
+            def jornada_ok(row):
+                max_jornadas = 219 if row.Turno_Contrato in ["Mañana", "Tarde"] else 147
+                return row.Jornadas_Asignadas < max_jornadas
+
+            cands = cands[cands.apply(jornada_ok, axis=1)]
+
 
                     def consecutive_ok(nurse_id):
                         fechas = staff_dates[nurse_id]
