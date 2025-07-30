@@ -1,4 +1,3 @@
-
 import streamlit as st
 import pandas as pd
 import ast
@@ -94,7 +93,7 @@ if file_staff and st.button("🚀 Ejecutar asignación"):
     df_prev = cargar_horas()
     staff_hours = dict(zip(df_prev["ID"], df_prev["Horas_Acumuladas"])) if not df_prev.empty else {row.ID: 0 for _, row in staff.iterrows()}
     staff_jornadas = dict.fromkeys(staff["ID"], 0)
-    staff_dates = {row.ID: [] for _, row in staff.iterrows()}
+staff_dates = {row.ID: [] for _, row in staff.iterrows()}
     assignments, uncovered = [], []
     demand_sorted = demand.sort_values(by="Fecha")
 
@@ -198,15 +197,7 @@ if st.session_state["asignacion_completada"]:
 
         
         # Recalcular resumen anual únicamente desde la asignación actual
-        df_actual = st.session_state["df_assign"].copy()
-        df_actual["Fecha"] = pd.to_datetime(df_actual["Fecha"])
-        df_actual["Mes"] = df_actual["Fecha"].dt.to_period("M")
-        resumen_mensual = df_actual.groupby(["ID_Enfermera", "Mes"], as_index=False)["Horas_Acumuladas"].sum()
-        resumen_mensual = resumen_mensual.rename(columns={"ID_Enfermera": "ID", "Horas_Acumuladas": "Horas totales mes"})
 
-        st.subheader("📊 Resumen del año en curso")
-        st.dataframe(resumen_mensual)
-        st.download_button("⬇️ Descargar resumen del año en curso", data=to_excel_bytes(resumen_mensual), file_name="Resumen_Anual.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 
 
         
