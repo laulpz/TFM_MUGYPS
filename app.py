@@ -94,7 +94,7 @@ if file_staff and st.button("🚀 Ejecutar asignación"):
     df_prev = cargar_horas()
     staff_hours = dict(zip(df_prev["ID"], df_prev["Horas_Acumuladas"])) if not df_prev.empty else {row.ID: 0 for _, row in staff.iterrows()}
     staff_jornadas = dict.fromkeys(staff["ID"], 0)
-staff_dates = {row.ID: [] for _, row in staff.iterrows()}
+    staff_dates = {row.ID: [] for _, row in staff.iterrows()}
     assignments, uncovered = [], []
     demand_sorted = demand.sort_values(by="Fecha")
 
