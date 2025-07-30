@@ -191,7 +191,7 @@ if st.session_state["asignacion_completada"]:
         df_todas["Fecha"] = pd.to_datetime(df_todas["Fecha"])
         df_anio = df_todas[df_todas["Fecha"].dt.year == datetime.now().year].copy()
         df_anio["Mes"] = df_anio["Fecha"].dt.to_period("M")
-        resumen_mensual = df_anio.groupby(["ID_Enfermera", "Mes"])["Horas_Acumuladas"].sum().reset_index()
+        resumen_mensual = df_anio.groupby(["ID_Enfermera", "Mes"], as_index=False)["Horas_Acumuladas"].sum()
         resumen_mensual = resumen_mensual.rename(columns={"ID_Enfermera": "ID", "Horas_Acumuladas": "Horas totales mes"})
 
         st.subheader("📊 Resumen del año en curso")
