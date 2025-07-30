@@ -145,7 +145,7 @@ if file_staff and st.button("🚀 Ejecutar asignación"):
 } for id_, horas in staff_hours.items()])
 
     if not df_prev.empty:
-        resumen_horas = pd.concat([df_prev, resumen_horas]).groupby(["ID", "Turno"], as_index=False).agg({"Horas acumuladas": "sum", "Jornadas trabajadas": "sum"})
+        resumen_horas = pd.concat([df_prev, resumen_horas]).groupby(["ID", "Turno_Contrato"], as_index=False).agg({"Horas_Acumuladas": "sum", "Jornadas": "sum"})
 
     st.session_state["asignacion_completada"] = True
     st.session_state["df_assign"] = df_assign
