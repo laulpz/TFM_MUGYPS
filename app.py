@@ -1,3 +1,4 @@
+
 import streamlit as st
 import pandas as pd
 import ast
@@ -93,7 +94,7 @@ if file_staff and st.button("🚀 Ejecutar asignación"):
     df_prev = cargar_horas()
     staff_hours = dict(zip(df_prev["ID"], df_prev["Horas_Acumuladas"])) if not df_prev.empty else {row.ID: 0 for _, row in staff.iterrows()}
     staff_jornadas = dict.fromkeys(staff["ID"], 0)
-    staff_dates = {row.ID: [] for _, row in staff.iterrows()}
+staff_dates = {row.ID: [] for _, row in staff.iterrows()}
     assignments, uncovered = [], []
     demand_sorted = demand.sort_values(by="Fecha")
 
@@ -211,6 +212,38 @@ if st.session_state["asignacion_completada"]:
         st.rerun()
 
 # Botón de reseteo de base de datos
+
+# Generador de histórico mensual por profesional
+st.sidebar.markdown("### 📊 Exportar histórico mensual")
+if st.sidebar.button("📤 Descargar histórico mensual"):
+    df_hist = cargar_asignaciones()
+    if not df_hist.empty:
+        df_hist["Fecha"] = pd.to_datetime(df_hist["Fecha"])
+        df_hist["Año"] = df_hist["Fecha"].dt.year
+        df_hist["Mes"] = df_hist["Fecha"].dt.month
+        resumen_mensual = df_hist.groupby(
+            ["ID_Enfermera", "Unidad", "Turno", "Año", "Mes"],
+            as_index=False
+        ).agg({"Horas_Acumuladas": "sum", "Fecha": "count"})
+        resumen_mensual = resumen_mensual.rename(
+            columns={"ID_Enfermera": "ID", "Fecha": "Jornadas Asignadas", "Horas_Acumuladas": "Horas Asignadas"}
+        )
+
+        def to_excel_bytes(df):
+            output = BytesIO()
+            with pd.ExcelWriter(output, engine="openpyxl") as writer:
+                df.to_excel(writer, index=False, sheet_name="Resumen_Mensual")
+            return output.getvalue()
+
+        st.sidebar.download_button(
+            label="⬇️ Descargar Excel mensual",
+            data=to_excel_bytes(resumen_mensual),
+            file_name="Historico_Mensual_Profesional.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
+    else:
+        st.sidebar.warning("No hay asignaciones previas registradas.")
+
 st.sidebar.markdown("---")
 if st.sidebar.button("🗑️ Resetear base de datos"):
     from db_manager import reset_db
