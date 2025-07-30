@@ -11,15 +11,6 @@ st.title("🩺 Planificador de Turnos de Enfermería (SERMAS)")
 
 init_db()
 
-st.markdown("""
-Este formulario permite planificar automáticamente los turnos de enfermería para un rango de fechas personalizado.
-
-1. Introduce la demanda semanal por turnos.
-2. Elige el rango de fechas.
-3. Sube el archivo Excel de plantilla de personal.
-4. Ejecuta la asignación.
-""")
-
 if "asignacion_completada" not in st.session_state:
     st.session_state["asignacion_completada"] = False
     st.session_state["df_assign"] = None
@@ -38,7 +29,7 @@ for dia in dias_semana:
     st.markdown(f"**{dia}**")
     cols = st.columns(3)
     demanda_por_dia[dia] = {}
-    valor_default = 10 if dia in dias_semana[:5] else 8
+    valor_default = 10 if dia in dias_semana[:5] else 4  # MODIFICADO: 4 fines de semana
     for i, turno in enumerate(turnos):
         demanda_por_dia[dia][turno] = cols[i].number_input(
             label=f"{turno}", min_value=0, max_value=20, value=valor_default, key=f"{dia}_{turno}"
@@ -137,20 +128,23 @@ if file_staff and st.button("🚀 Ejecutar asignación"):
 
     df_assign = pd.DataFrame(assignments)
     df_uncov = pd.DataFrame(uncovered) if uncovered else None
-    resumen_horas = pd.DataFrame([{"ID": id_, "Turno_Contrato": staff.loc[staff.ID == id_, "Turno_Contrato"].values[0],
-                                   "Horas_Acumuladas": horas} for id_, horas in staff_hours.items()])
+    resumen_horas = pd.DataFrame([{
+        "ID": id_,
+        "Turno_Contrato": staff.loc[staff.ID == id_, "Turno_Contrato"].values[0],
+        "Horas_Acumuladas": horas,
+        "Jornadas": len(staff_dates[id_])
+    } for id_, horas in staff_hours.items()])
 
     if not df_prev.empty:
-        resumen_horas = pd.concat([df_prev, resumen_horas]).groupby(["ID", "Turno_Contrato"], as_index=False).Horas_Acumuladas.sum()
+        resumen_horas = pd.concat([df_prev, resumen_horas]).groupby(["ID", "Turno_Contrato"], as_index=False).agg({
+            "Horas_Acumuladas": "sum",
+            "Jornadas": "sum"
+        })
 
     st.session_state["asignacion_completada"] = True
     st.session_state["df_assign"] = df_assign
     st.session_state["df_uncov"] = df_uncov
     st.session_state["resumen_horas"] = resumen_horas
-
-if st.session_state["asignacion_completada"]:
-    st.success("✅ Asignación completada")
-    st.dataframe(st.session_state["df_assign"])
 
     def to_excel_bytes(df):
         output = BytesIO()
@@ -158,85 +152,31 @@ if st.session_state["asignacion_completada"]:
             df.to_excel(writer, index=False)
         return output.getvalue()
 
-    st.download_button("⬇️ Descargar planilla asignada", data=to_excel_bytes(st.session_state["df_assign"]),
+    st.success("✅ Asignación completada")
+    st.dataframe(st.session_state["df_assign"])
+
+    st.download_button("⬇️ Descargar planilla asignada", data=to_excel_bytes(df_assign),
                        file_name="Planilla_Asignada.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 
-    if st.session_state["df_uncov"] is not None:
+    if df_uncov is not None:
         st.subheader("⚠️ Turnos sin cubrir")
-        st.dataframe(st.session_state["df_uncov"])
-        st.download_button("⬇️ Descargar turnos sin cubrir", data=to_excel_bytes(st.session_state["df_uncov"]),
-                           file_name="Turnos_Sin_Cubrir.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+        st.dataframe(df_uncov)
+        st.download_button("⬇️ Descargar turnos sin cubrir", data=to_excel_bytes(df_uncov),
+                           file_name="Turnos_Sin_Cubrir.xlsx",
+                           mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 
     st.markdown("### ✅ Confirmación de asignación")
     aprobacion = st.radio("¿Deseas aprobar esta asignación?", ["Pendiente", "Aprobar", "Rehacer"], index=0)
 
     if aprobacion == "Aprobar":
-        guardar_horas(st.session_state["resumen_horas"])
-        guardar_asignaciones(st.session_state["df_assign"])
+        guardar_horas(resumen_horas)
+        guardar_asignaciones(df_assign)
         st.success("📥 Datos guardados en la base de datos correctamente.")
 
         st.subheader("🧾 Resumen mensual de horas acumuladas")
-        st.dataframe(st.session_state["resumen_horas"])
+        st.dataframe(resumen_horas)
         st.download_button("⬇️ Descargar resumen mensual de horas",
-                           data=to_excel_bytes(st.session_state["resumen_horas"]),
+                           data=to_excel_bytes(resumen_horas),
                            file_name="Resumen_Horas_Acumuladas.xlsx",
                            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 
-        # Resumen mensual del año en curso
-        df_todas = cargar_asignaciones()
-        df_todas["Fecha"] = pd.to_datetime(df_todas["Fecha"])
-        df_anio = df_todas[df_todas["Fecha"].dt.year == datetime.now().year].copy()
-        df_anio["Mes"] = df_anio["Fecha"].dt.to_period("M")
-        resumen_mensual = df_anio.groupby(["ID_Enfermera", "Mes"])["Horas_Acumuladas"].sum().reset_index()
-        resumen_mensual = resumen_mensual.rename(columns={"ID_Enfermera": "ID", "Horas_Acumuladas": "Horas_Mes"})
-
-        st.subheader("📊 Resumen mensual del año en curso")
-        st.dataframe(resumen_mensual)
-        st.download_button("⬇️ Descargar resumen mensual del año",
-                           data=to_excel_bytes(resumen_mensual),
-                           file_name="Resumen_Mensual_Anual.xlsx",
-                           mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-
-
-        # Resumen mensual pivotado SOLO con asignación actual, con meses en español
-        df_actual = st.session_state["df_assign"].copy()
-        df_actual["Fecha"] = pd.to_datetime(df_actual["Fecha"])
-        df_actual["Mes_Num"] = df_actual["Fecha"].dt.month
-        df_actual["Mes"] = df_actual["Mes_Num"].apply(lambda x: ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'][x - 1])
-
-        resumen_pivot = df_actual.pivot_table(
-            index=["ID_Enfermera", "Jornada"],
-            columns="Mes",
-            values="Horas_Acumuladas",
-            aggfunc="sum",
-            fill_value=0
-        ).reset_index()
-
-        # Ordenar columnas cronológicamente según meses en español
-        resumen_pivot = resumen_pivot[["ID_Enfermera", "Jornada"] + [mes for mes in ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'] if mes in resumen_pivot.columns]]
-
-        st.subheader("📊 Resumen mensual (asignación actual)")
-        st.dataframe(resumen_pivot)
-        st.download_button("⬇️ Descargar resumen mensual pivotado",
-                           data=to_excel_bytes(resumen_pivot),
-                           file_name="Resumen_Pivotado_Actual.xlsx",
-                           mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-
-    elif aprobacion == "Rehacer":
-        st.session_state["asignacion_completada"] = False
-        st.rerun()
-
-    if st.button("🔄 Reiniciar aplicación"):
-        for key in list(st.session_state.keys()):
-            del st.session_state[key]
-        st.rerun()
-
-# Botón de reseteo de base de datos
-st.sidebar.markdown("---")
-if st.sidebar.button("🗑️ Resetear base de datos"):
-    from db_manager import reset_db
-    reset_db()
-    st.sidebar.success("✅ Base de datos reseteada correctamente.")
-    for key in list(st.session_state.keys()):
-        del st.session_state[key]
-    st.rerun()
