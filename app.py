@@ -283,7 +283,7 @@ else:
 
 
 st.sidebar.markdown("---")
-    from db_manager import init_db, reset_db, guardar_asignaciones, cargar_asignaciones, confirmar_asignaciones
+from db_manager import init_db, reset_db, guardar_asignaciones, cargar_asignaciones, confirmar_asignaciones
     reset_db()
     init_db()
     st.sidebar.success("✅ Base de datos reseteada y reestructurada correctamente.")
