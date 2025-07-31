@@ -125,6 +125,19 @@ if file_staff and st.button("🚀 Ejecutar asignación"):
                         else: break
                 return True
             cands = cands[cands["ID"].apply(consecutive_ok)]
+            def descanso_12h_ok(nurse_id):
+                fechas = staff_dates[nurse_id]
+                if not fechas:
+                    return True
+                fecha_actual = datetime.strptime(fecha, "%Y-%m-%d")
+                for fecha_prev in fechas:
+                    dt_prev = datetime.strptime(fecha_prev, "%Y-%m-%d")
+                    if abs((fecha_actual - dt_prev).total_seconds()) < 12 * 3600:
+                        return False
+                return True
+
+            cands = cands[cands["ID"].apply(descanso_12h_ok)]
+
             cands = cands.sample(frac=1).sort_values(by="Horas_Asignadas")
         if not cands.empty:
             for _, cand in cands.iterrows():
@@ -213,44 +226,35 @@ if st.session_state["asignacion_completada"]:
 # Botón de reseteo de base de datos
 
 # Generador de histórico mensual por profesional
+st.sidebar.markdown("### 📊 Exportar histórico mensual")
+if st.sidebar.button("📤 Descargar histórico mensual"):
+    df_hist = cargar_asignaciones()
+    if not df_hist.empty:
+        df_hist["Fecha"] = pd.to_datetime(df_hist["Fecha"])
+        df_hist["Año"] = df_hist["Fecha"].dt.year
+        df_hist["Mes"] = df_hist["Fecha"].dt.month
+        resumen_mensual = df_hist.groupby(
+            ["ID_Enfermera", "Unidad", "Turno", "Año", "Mes"],
+            as_index=False
+        ).agg({"Horas_Acumuladas": "sum", "Fecha": "count"})
+        resumen_mensual = resumen_mensual.rename(
+            columns={"ID_Enfermera": "ID", "Fecha": "Jornadas Asignadas", "Horas_Acumuladas": "Horas Asignadas"}
+        )
 
+        def to_excel_bytes(df):
+            output = BytesIO()
+            with pd.ExcelWriter(output, engine="openpyxl") as writer:
+                df.to_excel(writer, index=False, sheet_name="Resumen_Mensual")
+            return output.getvalue()
 
-
-# Botón directo para exportar histórico mensual por profesional
-df_hist = cargar_asignaciones()
-if not df_hist.empty:
-    df_hist["Fecha"] = pd.to_datetime(df_hist["Fecha"])
-    df_hist["Año"] = df_hist["Fecha"].dt.year
-    df_hist["Mes"] = df_hist["Fecha"].dt.month
-    resumen_mensual = df_hist.groupby(
-        ["ID_Enfermera", "Unidad", "Turno", "Año", "Mes"],
-        as_index=False
-    ).agg({"Horas_Acumuladas": "sum", "Fecha": "count"})
-    resumen_mensual = resumen_mensual.rename(
-        columns={
-            "ID_Enfermera": "ID",
-            "Unidad": "Unidad Asignada",
-            "Turno": "Turno_Contrato",
-            "Fecha": "Jornadas Asignadas",
-            "Horas_Acumuladas": "Horas Asignadas"
-        }
-    )
-
-    def to_excel_bytes(df):
-        output = BytesIO()
-        with pd.ExcelWriter(output, engine="openpyxl") as writer:
-            df.to_excel(writer, index=False, sheet_name="Resumen_Mensual")
-        return output.getvalue()
-
-    st.sidebar.download_button(
-        label="📤 Descargar histórico mensual por profesional",
-        data=to_excel_bytes(resumen_mensual),
-        file_name="Historico_Mensual_Profesional.xlsx",
-        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-    )
-else:
-    st.sidebar.warning("No hay asignaciones previas registradas.")
-
+        st.sidebar.download_button(
+            label="⬇️ Descargar Excel mensual",
+            data=to_excel_bytes(resumen_mensual),
+            file_name="Historico_Mensual_Profesional.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
+    else:
+        st.sidebar.warning("No hay asignaciones previas registradas.")
 
 st.sidebar.markdown("---")
 if st.sidebar.button("🗑️ Resetear base de datos"):
