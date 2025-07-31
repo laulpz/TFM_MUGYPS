@@ -1,4 +1,3 @@
-
 import sqlite3
 import pandas as pd
 from pathlib import Path
@@ -9,50 +8,52 @@ def init_db():
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
     c.execute('''
+        CREATE TABLE IF NOT EXISTS horas (
+            ID TEXT,
+            Turno_Contrato TEXT,
+            Horas_Acumuladas REAL,
+            PRIMARY KEY (ID, Turno_Contrato)
+        )
+    ''')
+    c.execute('''
         CREATE TABLE IF NOT EXISTS asignaciones (
             Fecha TEXT,
             Unidad TEXT,
             Turno TEXT,
             ID_Enfermera TEXT,
             Jornada TEXT,
-            Horas_Acumuladas REAL,
-            Confirmado INTEGER DEFAULT 0
+            Horas_Acumuladas REAL
         )
     ''')
     conn.commit()
     conn.close()
 
-def guardar_asignaciones(df):
+def cargar_horas():
     conn = sqlite3.connect(DB_PATH)
-    df["Confirmado"] = df.get("Confirmado", 0)
-    df.to_sql("asignaciones", conn, if_exists="append", index=False)
-    conn.close()
-
-def cargar_asignaciones(confirmado=True):
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
-    cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='asignaciones'")
-    exists = cursor.fetchone()
-    if not exists:
-        conn.close()
-        return pd.DataFrame()
-    query = "SELECT * FROM asignaciones"
-    if confirmado:
-        query += " WHERE Confirmado = 1"
-    df = pd.read_sql_query(query, conn)
+    df = pd.read_sql_query("SELECT * FROM horas", conn)
     conn.close()
     return df
 
-def confirmar_asignaciones():
+def guardar_horas(df):
     conn = sqlite3.connect(DB_PATH)
-    c = conn.cursor()
-    c.execute("UPDATE asignaciones SET Confirmado = 1 WHERE Confirmado = 0")
-    conn.commit()
+    df.to_sql("horas", conn, if_exists="replace", index=False)
     conn.close()
+
+def guardar_asignaciones(df):
+    conn = sqlite3.connect(DB_PATH)
+    df.to_sql("asignaciones", conn, if_exists="append", index=False)
+    conn.close()
+
+def cargar_asignaciones():
+    conn = sqlite3.connect(DB_PATH)
+    df = pd.read_sql_query("SELECT * FROM asignaciones", conn)
+    conn.close()
+    return df
 
 def reset_db():
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
+    c.execute("DROP TABLE IF EXISTS horas")
     c.execute("DROP TABLE IF EXISTS asignaciones")
     conn.commit()
     conn.close()
