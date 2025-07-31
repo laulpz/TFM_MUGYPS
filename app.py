@@ -20,12 +20,12 @@ Este formulario permite planificar automáticamente los turnos de enfermería pa
 """)
 
 if "asignacion_completada" not in st.session_state:
-st.session_state["asignacion_completada"] = False
+    st.session_state["asignacion_completada"] = False
 st.session_state["df_assign"] = None
 st.session_state["df_uncov"] = None
 st.session_state["resumen_horas"] = None
 if "file_staff" not in st.session_state:
-st.session_state["file_staff"] = None
+    st.session_state["file_staff"] = None
 
 st.subheader("📆 Configura la demanda semanal por turnos")
 unidad_seleccionada = st.selectbox("Selecciona la unidad hospitalaria", ["Medicina Interna", "UCI", "Urgencias", "Oncología"])
@@ -34,7 +34,7 @@ turnos = ["Mañana", "Tarde", "Noche"]
 demanda_por_dia = {}
 
 for dia in dias_semana:
-st.markdown(f"**{dia}**")
+    st.markdown(f"**{dia}**")
     cols = st.columns(3)
     demanda_por_dia[dia] = {}
     valor_default = 8 if dia in dias_semana[:5] else 4
@@ -49,13 +49,13 @@ fecha_inicio = col1.date_input("Fecha inicio planificación", value=date(2025, 1
 fecha_fin = col2.date_input("Fecha fin planificación", value=date(2025, 1, 31))
 
 if fecha_fin <= fecha_inicio:
-st.warning("⚠️ La fecha fin debe ser posterior a la fecha inicio.")
+    st.warning("⚠️ La fecha fin debe ser posterior a la fecha inicio.")
 st.stop()
 
 st.sidebar.header("📂 Carga tu Excel con la plantilla de enfermería")
 file_input = st.sidebar.file_uploader("El archivo debe contener las siguientes columnas: ", type=["xlsx"])
 if file_input:
-st.session_state["file_staff"] = file_input
+    st.session_state["file_staff"] = file_input
 file_staff = st.session_state["file_staff"]
 
 if file_staff and st.button("🚀 Ejecutar asignación"):
@@ -175,7 +175,7 @@ st.session_state["df_uncov"] = df_uncov
 st.session_state["resumen_horas"] = resumen_horas
 
 if st.session_state["asignacion_completada"]:
-st.success("✅ Asignación completada")
+    st.success("✅ Asignación completada")
 st.dataframe(st.session_state["df_assign"])
 
 def to_excel_bytes(df):
@@ -188,7 +188,7 @@ st.download_button("⬇️ Descargar planilla asignada", data=to_excel_bytes(st.
                        file_name="Planilla_Asignada.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 
     if st.session_state["df_uncov"] is not None:
-st.subheader("⚠️ Turnos sin cubrir")
+    st.subheader("⚠️ Turnos sin cubrir")
 st.dataframe(st.session_state["df_uncov"])
 st.download_button("⬇️ Descargar turnos sin cubrir", data=to_excel_bytes(st.session_state["df_uncov"]),
                            file_name="Turnos_Sin_Cubrir.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
@@ -215,7 +215,7 @@ st.download_button("⬇️ Descargar resumen mensual por profesional",
 
         
     elif aprobacion == "Rehacer":
-st.session_state["asignacion_completada"] = False
+    st.session_state["asignacion_completada"] = False
 st.rerun()
 
     if st.button("🔄 Reiniciar aplicación"):
@@ -234,7 +234,7 @@ st.rerun()
 
 st.sidebar.markdown("---")
 if st.sidebar.button("🗑️ Resetear base de datos", key="sidebar_reset_db_button"):
-reset_db()
+    reset_db()
 init_db()
 st.sidebar.success("✅ Base de datos reseteada y reestructurada correctamente.")
     for key in list(st.session_state.keys()):
@@ -278,7 +278,7 @@ st.sidebar.download_button(
         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
 else:
-st.sidebar.warning("No hay asignaciones previas registradas.")
+    st.sidebar.warning("No hay asignaciones previas registradas.")
 
 
 
