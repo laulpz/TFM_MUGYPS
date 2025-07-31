@@ -8,7 +8,7 @@ from db_manager import init_db, reset_db, guardar_asignaciones, cargar_asignacio
 st.set_page_config(page_title="Asignador único de Turnos – SERMAS", layout="wide")
 st.title("🩺 Planificador de Turnos de Enfermería (SERMAS)")
 
-    init_db()
+init_db()
 
 st.markdown("""
 Este formulario permite planificar automáticamente los turnos de enfermería para un rango de fechas personalizado.
@@ -20,12 +20,12 @@ Este formulario permite planificar automáticamente los turnos de enfermería pa
 """)
 
 if "asignacion_completada" not in st.session_state:
-    st.session_state["asignacion_completada"] = False
-    st.session_state["df_assign"] = None
-    st.session_state["df_uncov"] = None
-    st.session_state["resumen_horas"] = None
+st.session_state["asignacion_completada"] = False
+st.session_state["df_assign"] = None
+st.session_state["df_uncov"] = None
+st.session_state["resumen_horas"] = None
 if "file_staff" not in st.session_state:
-    st.session_state["file_staff"] = None
+st.session_state["file_staff"] = None
 
 st.subheader("📆 Configura la demanda semanal por turnos")
 unidad_seleccionada = st.selectbox("Selecciona la unidad hospitalaria", ["Medicina Interna", "UCI", "Urgencias", "Oncología"])
@@ -34,7 +34,7 @@ turnos = ["Mañana", "Tarde", "Noche"]
 demanda_por_dia = {}
 
 for dia in dias_semana:
-    st.markdown(f"**{dia}**")
+st.markdown(f"**{dia}**")
     cols = st.columns(3)
     demanda_por_dia[dia] = {}
     valor_default = 8 if dia in dias_semana[:5] else 4
@@ -49,13 +49,13 @@ fecha_inicio = col1.date_input("Fecha inicio planificación", value=date(2025, 1
 fecha_fin = col2.date_input("Fecha fin planificación", value=date(2025, 1, 31))
 
 if fecha_fin <= fecha_inicio:
-    st.warning("⚠️ La fecha fin debe ser posterior a la fecha inicio.")
-    st.stop()
+st.warning("⚠️ La fecha fin debe ser posterior a la fecha inicio.")
+st.stop()
 
 st.sidebar.header("📂 Carga tu Excel con la plantilla de enfermería")
 file_input = st.sidebar.file_uploader("El archivo debe contener las siguientes columnas: ", type=["xlsx"])
 if file_input:
-    st.session_state["file_staff"] = file_input
+st.session_state["file_staff"] = file_input
 file_staff = st.session_state["file_staff"]
 
 if file_staff and st.button("🚀 Ejecutar asignación"):
@@ -65,14 +65,14 @@ if file_staff and st.button("🚀 Ejecutar asignación"):
     staff = pd.read_excel(file_staff)
     staff.columns = staff.columns.str.strip()
 
-    def parse_dates(cell):
+def parse_dates(cell):
         if pd.isna(cell): return []
         try: return [d.strip() for d in ast.literal_eval(str(cell))]
         except: return [d.strip() for d in str(cell).split(',')]
 
     staff["Fechas_No_Disponibilidad"] = staff["Fechas_No_Disponibilidad"].apply(parse_dates)
-    st.subheader("👩‍⚕️ Personal cargado")
-    st.dataframe(staff)
+st.subheader("👩‍⚕️ Personal cargado")
+st.dataframe(staff)
 
     start_date = datetime.combine(fecha_inicio, datetime.min.time())
     end_date = datetime.combine(fecha_fin, datetime.min.time())
@@ -105,13 +105,13 @@ if file_staff and st.button("🚀 Ejecutar asignación"):
             cands["Horas_Asignadas"] = cands["ID"].map(staff_hours)
             cands["Jornadas_Asignadas"] = cands["ID"].map(lambda x: staff_jornadas[x])
 
-            def jornada_ok(row):
+def jornada_ok(row):
                 max_jornadas = 219 if row.Turno_Contrato in ["Mañana", "Tarde"] else 147
                 return row.Jornadas_Asignadas < max_jornadas
 
             cands = cands[cands.apply(jornada_ok, axis=1)]
 
-            def consecutive_ok(nurse_id):
+def consecutive_ok(nurse_id):
                 fechas = staff_dates[nurse_id]
                 if not fechas: return True
                 last_date = max(fechas)
@@ -125,7 +125,7 @@ if file_staff and st.button("🚀 Ejecutar asignación"):
                         else: break
                 return True
             cands = cands[cands["ID"].apply(consecutive_ok)]
-            def descanso_12h_ok(nurse_id):
+def descanso_12h_ok(nurse_id):
                 fechas = staff_dates[nurse_id]
                 if not fechas:
                     return True
@@ -169,41 +169,41 @@ if file_staff and st.button("🚀 Ejecutar asignación"):
     if not df_prev.empty:
         resumen_horas = pd.concat([df_prev, resumen_horas]).groupby(["ID", "Turno_Contrato"], as_index=False).agg({"Horas_Acumuladas": "sum", "Jornadas": "sum"})
 
-    st.session_state["asignacion_completada"] = True
-    st.session_state["df_assign"] = df_assign
-    st.session_state["df_uncov"] = df_uncov
-    st.session_state["resumen_horas"] = resumen_horas
+st.session_state["asignacion_completada"] = True
+st.session_state["df_assign"] = df_assign
+st.session_state["df_uncov"] = df_uncov
+st.session_state["resumen_horas"] = resumen_horas
 
 if st.session_state["asignacion_completada"]:
-    st.success("✅ Asignación completada")
-    st.dataframe(st.session_state["df_assign"])
+st.success("✅ Asignación completada")
+st.dataframe(st.session_state["df_assign"])
 
-    def to_excel_bytes(df):
+def to_excel_bytes(df):
         output = BytesIO()
         with pd.ExcelWriter(output, engine="openpyxl") as writer:
             df.to_excel(writer, index=False)
         return output.getvalue()
 
-    st.download_button("⬇️ Descargar planilla asignada", data=to_excel_bytes(st.session_state["df_assign"]),
+st.download_button("⬇️ Descargar planilla asignada", data=to_excel_bytes(st.session_state["df_assign"]),
                        file_name="Planilla_Asignada.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 
     if st.session_state["df_uncov"] is not None:
-        st.subheader("⚠️ Turnos sin cubrir")
-        st.dataframe(st.session_state["df_uncov"])
-        st.download_button("⬇️ Descargar turnos sin cubrir", data=to_excel_bytes(st.session_state["df_uncov"]),
+st.subheader("⚠️ Turnos sin cubrir")
+st.dataframe(st.session_state["df_uncov"])
+st.download_button("⬇️ Descargar turnos sin cubrir", data=to_excel_bytes(st.session_state["df_uncov"]),
                            file_name="Turnos_Sin_Cubrir.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 
-    st.markdown("### ✅ Confirmación de asignación")
+st.markdown("### ✅ Confirmación de asignación")
     aprobacion = st.radio("¿Deseas aprobar esta asignación?", ["Pendiente", "Aprobar", "Rehacer"], index=0)
 
     if aprobacion == "Aprobar":
         guardar_horas(st.session_state["resumen_horas"])
         guardar_asignaciones(st.session_state["df_assign"])
-        st.success("📥 Datos guardados en la base de datos correctamente.")
+st.success("📥 Datos guardados en la base de datos correctamente.")
 
-        st.subheader("🧾 Resumen Asignación Mensual por profesional")
-        st.dataframe(st.session_state["resumen_horas"])
-        st.download_button("⬇️ Descargar resumen mensual por profesional",
+st.subheader("🧾 Resumen Asignación Mensual por profesional")
+st.dataframe(st.session_state["resumen_horas"])
+st.download_button("⬇️ Descargar resumen mensual por profesional",
                            data=to_excel_bytes(st.session_state["resumen_horas"]),
                            file_name="Resumen_Mensual_Profesional.xlsx",
                            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
@@ -215,13 +215,13 @@ if st.session_state["asignacion_completada"]:
 
         
     elif aprobacion == "Rehacer":
-        st.session_state["asignacion_completada"] = False
-        st.rerun()
+st.session_state["asignacion_completada"] = False
+st.rerun()
 
     if st.button("🔄 Reiniciar aplicación"):
         for key in list(st.session_state.keys()):
             del st.session_state[key]
-        st.rerun()
+st.rerun()
 
 # Botón de reseteo de base de datos
 
@@ -234,12 +234,12 @@ if st.session_state["asignacion_completada"]:
 
 st.sidebar.markdown("---")
 if st.sidebar.button("🗑️ Resetear base de datos", key="sidebar_reset_db_button"):
-    reset_db()
-    init_db()
-    st.sidebar.success("✅ Base de datos reseteada y reestructurada correctamente.")
+reset_db()
+init_db()
+st.sidebar.success("✅ Base de datos reseteada y reestructurada correctamente.")
     for key in list(st.session_state.keys()):
         del st.session_state[key]
-    st.rerun()
+st.rerun()
 
 # Botón directo para exportar histórico mensual por profesional
 try:
@@ -265,29 +265,29 @@ if not df_hist.empty:
         "Horas_Acumuladas": "Horas Asignadas"
     })
 
-    def to_excel_bytes(df):
+def to_excel_bytes(df):
         output = BytesIO()
         with pd.ExcelWriter(output, engine="openpyxl") as writer:
             df.to_excel(writer, index=False, sheet_name="Resumen_Mensual")
         return output.getvalue()
 
-    st.sidebar.download_button(
+st.sidebar.download_button(
         label="📤 Descargar histórico mensual por profesional",
         data=to_excel_bytes(resumen_mensual),
         file_name="Historico_Mensual_Profesional.xlsx",
         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
 else:
-    st.sidebar.warning("No hay asignaciones previas registradas.")
+st.sidebar.warning("No hay asignaciones previas registradas.")
 
 
 
 st.sidebar.markdown("---")
 from db_manager import init_db, reset_db, guardar_asignaciones, cargar_asignaciones, confirmar_asignaciones
-    reset_db()
-    init_db()
-    st.sidebar.success("✅ Base de datos reseteada y reestructurada correctamente.")
+reset_db()
+init_db()
+st.sidebar.success("✅ Base de datos reseteada y reestructurada correctamente.")
     for key in list(st.session_state.keys()):
         del st.session_state[key]
-    st.rerun()
+st.rerun()
 
