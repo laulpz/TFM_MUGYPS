@@ -65,13 +65,40 @@ if file_staff and st.button("🚀 Ejecutar asignación"):
     staff = pd.read_excel(file_staff)
     staff.columns = staff.columns.str.strip()
 
-def parse_dates(cell):
-        if pd.isna(cell): return []
-        try: return [d.strip() for d in ast.literal_eval(str(cell))]
-        except: return [d.strip() for d in str(cell).split(',')]
 
+def parse_dates(cell):
+    if pd.isna(cell):
+        return []
+    try:
+        return [d.strip() for d in ast.literal_eval(str(cell))]
+    except:
+        return [d.strip() for d in str(cell).split(',')]
+
+if file_staff and st.button("🚀 Ejecutar asignación"):
+    SHIFT_HOURS = {"Mañana": 7.5, "Tarde": 7.5, "Noche": 10}
+    MAX_HOURS = {"Mañana": 1642.5, "Tarde": 1642.5, "Noche": 1470}
+
+    staff = pd.read_excel(file_staff)
+    staff.columns = staff.columns.str.strip()
     staff["Fechas_No_Disponibilidad"] = staff["Fechas_No_Disponibilidad"].apply(parse_dates)
-st.subheader("👩‍⚕️ Personal cargado")
+
+    st.subheader("👩‍⚕️ Personal cargado")
+    st.dataframe(staff)
+
+    start_date = datetime.combine(fecha_inicio, datetime.min.time())
+    end_date = datetime.combine(fecha_fin, datetime.min.time())
+    fechas = [start_date + timedelta(days=i) for i in range((end_date - start_date).days + 1)]
+
+    demanda = []
+    for fecha in fechas:
+        dia_castellano = dias_semana[fecha.weekday()]
+        for turno in turnos:
+            demanda.append({
+                "Fecha": fecha.strftime("%Y-%m-%d"),
+                "Unidad": unidad_seleccionada,
+                "Turno": turno,
+                "Personal_Requerido": demanda_por_dia[dia_castellano][turno]
+            })
 st.dataframe(staff)
 
     start_date = datetime.combine(fecha_inicio, datetime.min.time())
