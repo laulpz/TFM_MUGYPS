@@ -231,8 +231,21 @@ if st.session_state["asignacion_completada"]:
 
 
 
+
+st.sidebar.markdown("---")
+if st.sidebar.button("🗑️ Resetear base de datos"):
+    reset_db()
+    init_db()
+    st.sidebar.success("✅ Base de datos reseteada y reestructurada correctamente.")
+    for key in list(st.session_state.keys()):
+        del st.session_state[key]
+    st.rerun()
+
 # Botón directo para exportar histórico mensual por profesional
-df_hist = cargar_asignaciones()
+try:
+    df_hist = cargar_asignaciones()
+except Exception:
+    df_hist = pd.DataFrame()
 if not df_hist.empty:
     df_hist["Fecha"] = pd.to_datetime(df_hist["Fecha"])
     df_hist["Año"] = df_hist["Fecha"].dt.year
