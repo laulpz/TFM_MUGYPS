@@ -3,7 +3,7 @@ import pandas as pd
 import ast
 from datetime import datetime, timedelta, date
 from io import BytesIO
-from db_manager import init_db, reset_db, guardar_asignaciones, cargar_asignaciones, confirmar_asignaciones
+from db_manager import init_db, cargar_horas, guardar_horas, guardar_asignaciones, cargar_asignaciones
 
 st.set_page_config(page_title="Asignador único de Turnos – SERMAS", layout="wide")
 st.title("🩺 Planificador de Turnos de Enfermería (SERMAS)")
@@ -231,21 +231,8 @@ if st.session_state["asignacion_completada"]:
 
 
 
-
-st.sidebar.markdown("---")
-if st.sidebar.button("🗑️ Resetear base de datos", key="sidebar_reset_db_button"):
-    reset_db()
-    init_db()
-    st.sidebar.success("✅ Base de datos reseteada y reestructurada correctamente.")
-    for key in list(st.session_state.keys()):
-        del st.session_state[key]
-    st.rerun()
-
 # Botón directo para exportar histórico mensual por profesional
-try:
-    df_hist = cargar_asignaciones()
-except Exception:
-    df_hist = pd.DataFrame()
+df_hist = cargar_asignaciones()
 if not df_hist.empty:
     df_hist["Fecha"] = pd.to_datetime(df_hist["Fecha"])
     df_hist["Año"] = df_hist["Fecha"].dt.year
@@ -281,13 +268,11 @@ else:
     st.sidebar.warning("No hay asignaciones previas registradas.")
 
 
-
 st.sidebar.markdown("---")
-from db_manager import init_db, reset_db, guardar_asignaciones, cargar_asignaciones, confirmar_asignaciones
-reset_db()
-init_db()
-st.sidebar.success("✅ Base de datos reseteada y reestructurada correctamente.")
-for key in list(st.session_state.keys()):
-    del st.session_state[key]
-st.rerun()
-
+if st.sidebar.button("🗑️ Resetear base de datos"):
+    from db_manager import reset_db
+    reset_db()
+    st.sidebar.success("✅ Base de datos reseteada correctamente.")
+    for key in list(st.session_state.keys()):
+        del st.session_state[key]
+    st.rerun()
