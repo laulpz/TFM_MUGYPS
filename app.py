@@ -185,13 +185,13 @@ def to_excel_bytes(df):
         return output.getvalue()
 
 st.download_button("⬇️ Descargar planilla asignada", data=to_excel_bytes(st.session_state["df_assign"]),
-                       file_name="Planilla_Asignada.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                    file_name="Planilla_Asignada.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 
     if st.session_state["df_uncov"] is not None:
     st.subheader("⚠️ Turnos sin cubrir")
 st.dataframe(st.session_state["df_uncov"])
 st.download_button("⬇️ Descargar turnos sin cubrir", data=to_excel_bytes(st.session_state["df_uncov"]),
-                           file_name="Turnos_Sin_Cubrir.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                        file_name="Turnos_Sin_Cubrir.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 
 st.markdown("### ✅ Confirmación de asignación")
     aprobacion = st.radio("¿Deseas aprobar esta asignación?", ["Pendiente", "Aprobar", "Rehacer"], index=0)
@@ -204,9 +204,9 @@ st.success("📥 Datos guardados en la base de datos correctamente.")
 st.subheader("🧾 Resumen Asignación Mensual por profesional")
 st.dataframe(st.session_state["resumen_horas"])
 st.download_button("⬇️ Descargar resumen mensual por profesional",
-                           data=to_excel_bytes(st.session_state["resumen_horas"]),
-                           file_name="Resumen_Mensual_Profesional.xlsx",
-                           mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                        data=to_excel_bytes(st.session_state["resumen_horas"]),
+                        file_name="Resumen_Mensual_Profesional.xlsx",
+                        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 
         
         # Recalcular resumen anual únicamente desde la asignación actual
