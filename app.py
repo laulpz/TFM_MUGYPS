@@ -230,6 +230,7 @@ if st.session_state["asignacion_completada"]:
 
 
 
+
 # Botón directo para exportar histórico mensual por profesional
 df_hist = cargar_asignaciones()
 if not df_hist.empty:
@@ -259,21 +260,9 @@ if not df_hist.empty:
 
     st.sidebar.download_button(
         label="📤 Descargar histórico mensual por profesional",
+        data=to_excel_bytes(resumen_mensual),
+        file_name="Historico_Mensual_Profesional.xlsx",
+        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
 else:
     st.sidebar.warning("No hay asignaciones previas registradas.")
-
-        label="📤 Descargar histórico mensual por profesional",
-    )
-else:
-    st.sidebar.warning("No hay asignaciones previas registradas.")
-
-
-st.sidebar.markdown("---")
-if st.sidebar.button("🗑️ Resetear base de datos"):
-    from db_manager import reset_db
-    reset_db()
-    st.sidebar.success("✅ Base de datos reseteada correctamente.")
-    for key in list(st.session_state.keys()):
-        del st.session_state[key]
-    st.rerun()
