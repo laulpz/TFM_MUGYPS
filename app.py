@@ -3,7 +3,7 @@ import pandas as pd
 import ast
 from datetime import datetime, timedelta, date
 from io import BytesIO
-from db_manager import init_db, cargar_horas, guardar_horas, guardar_asignaciones, cargar_asignaciones
+from db_manager import init_db, reset_db, guardar_asignaciones, cargar_asignaciones, confirmar_asignaciones
 
 st.set_page_config(page_title="Asignador único de Turnos – SERMAS", layout="wide")
 st.title("🩺 Planificador de Turnos de Enfermería (SERMAS)")
@@ -271,7 +271,7 @@ else:
 
 st.sidebar.markdown("---")
 if st.sidebar.button("🗑️ Resetear base de datos"):
-    from db_manager import reset_db, init_db
+    from db_manager import init_db, reset_db, guardar_asignaciones, cargar_asignaciones, confirmar_asignaciones
     reset_db()
     init_db()
     st.sidebar.success("✅ Base de datos reseteada y reestructurada correctamente.")
