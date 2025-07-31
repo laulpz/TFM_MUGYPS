@@ -103,6 +103,19 @@ def ejecutar_asignador():
                         return True
 
                     cands = cands[cands["ID"].apply(consecutive_ok)]
+                    def descanso_12h_ok(nurse_id):
+                        fechas_previas = staff_dates[nurse_id]
+                        if not fechas_previas:
+                            return True
+                        fecha_actual = datetime.strptime(fecha, "%Y-%m-%d")
+                        for fecha_ant in fechas_previas:
+                            fecha_prev = datetime.strptime(fecha_ant, "%Y-%m-%d")
+                            if abs((fecha_actual - fecha_prev).total_seconds()) < 12 * 3600:
+                                return False
+                        return True
+
+                    cands = cands[cands["ID"].apply(descanso_12h_ok)]
+
 
                     def hours_ok(row):
                         return row.Horas_Asignadas + SHIFT_HOURS[turno] <= MAX_HOURS[row.Turno_Contrato]
