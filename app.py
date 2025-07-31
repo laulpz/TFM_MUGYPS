@@ -266,10 +266,10 @@ if not df_hist.empty:
 else:
     st.sidebar.warning("No hay asignaciones previas registradas.")
 
-        label="📤 Descargar histórico mensual por profesional",
-        data=to_excel_bytes(resumen_mensual),
-        file_name="Historico_Mensual_Profesional.xlsx",
-        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    label="📤 Descargar histórico mensual por profesional",
+    data=to_excel_bytes(resumen_mensual),
+    file_name="Historico_Mensual_Profesional.xlsx",
+    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
 else:
     st.sidebar.warning("No hay asignaciones previas registradas.")
