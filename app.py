@@ -283,7 +283,6 @@ else:
 
 
 st.sidebar.markdown("---")
-if st.sidebar.button("🗑️ Resetear base de datos", key="sidebar_reset_db_button"):
     from db_manager import init_db, reset_db, guardar_asignaciones, cargar_asignaciones, confirmar_asignaciones
     reset_db()
     init_db()
