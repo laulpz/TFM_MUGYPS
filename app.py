@@ -266,3 +266,13 @@ if not df_hist.empty:
     )
 else:
     st.sidebar.warning("No hay asignaciones previas registradas.")
+
+
+st.sidebar.markdown("---")
+if st.sidebar.button("🗑️ Resetear base de datos"):
+    from db_manager import reset_db
+    reset_db()
+    st.sidebar.success("✅ Base de datos reseteada correctamente.")
+    for key in list(st.session_state.keys()):
+        del st.session_state[key]
+    st.rerun()
