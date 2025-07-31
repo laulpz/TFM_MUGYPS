@@ -132,13 +132,13 @@ st.dataframe(staff)
             cands["Horas_Asignadas"] = cands["ID"].map(staff_hours)
             cands["Jornadas_Asignadas"] = cands["ID"].map(lambda x: staff_jornadas[x])
 
-def jornada_ok(row):
+    def jornada_ok(row):
                 max_jornadas = 219 if row.Turno_Contrato in ["Mañana", "Tarde"] else 147
                 return row.Jornadas_Asignadas < max_jornadas
 
             cands = cands[cands.apply(jornada_ok, axis=1)]
 
-def consecutive_ok(nurse_id):
+    def consecutive_ok(nurse_id):
                 fechas = staff_dates[nurse_id]
                 if not fechas: return True
                 last_date = max(fechas)
@@ -152,7 +152,7 @@ def consecutive_ok(nurse_id):
                         else: break
                 return True
             cands = cands[cands["ID"].apply(consecutive_ok)]
-def descanso_12h_ok(nurse_id):
+    def descanso_12h_ok(nurse_id):
                 fechas = staff_dates[nurse_id]
                 if not fechas:
                     return True
@@ -191,27 +191,27 @@ def descanso_12h_ok(nurse_id):
     "Turno_Contrato": staff.loc[staff.ID == id_, "Turno_Contrato"].values[0],
     "Horas_Acumuladas": horas,
     "Jornadas": len(staff_dates[id_])
-} for id_, horas in staff_hours.items()])
+    } for id_, horas in staff_hours.items()])
 
     if not df_prev.empty:
         resumen_horas = pd.concat([df_prev, resumen_horas]).groupby(["ID", "Turno_Contrato"], as_index=False).agg({"Horas_Acumuladas": "sum", "Jornadas": "sum"})
 
-st.session_state["asignacion_completada"] = True
-st.session_state["df_assign"] = df_assign
-st.session_state["df_uncov"] = df_uncov
-st.session_state["resumen_horas"] = resumen_horas
+    st.session_state["asignacion_completada"] = True
+    st.session_state["df_assign"] = df_assign
+    st.session_state["df_uncov"] = df_uncov
+    st.session_state["resumen_horas"] = resumen_horas
 
-if st.session_state["asignacion_completada"]:
+    if st.session_state["asignacion_completada"]:
     st.success("✅ Asignación completada")
-st.dataframe(st.session_state["df_assign"])
+    st.dataframe(st.session_state["df_assign"])
 
-def to_excel_bytes(df):
+    def to_excel_bytes(df):
         output = BytesIO()
         with pd.ExcelWriter(output, engine="openpyxl") as writer:
             df.to_excel(writer, index=False)
         return output.getvalue()
 
-st.download_button("⬇️ Descargar planilla asignada", data=to_excel_bytes(st.session_state["df_assign"]),
+    st.download_button("⬇️ Descargar planilla asignada", data=to_excel_bytes(st.session_state["df_assign"]),
                     file_name="Planilla_Asignada.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 
     if st.session_state["df_uncov"] is not None:
