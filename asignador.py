@@ -170,4 +170,4 @@ def ejecutar_asignador():
                     mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
                 )
     else:
-        st.info("🔄 Por favor, suba los dos archivos (personal y demanda) para comenzar.")
+        st.info("🔄 Por favor, suba los dos ar
