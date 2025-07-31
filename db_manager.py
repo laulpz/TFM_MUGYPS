@@ -30,6 +30,12 @@ def guardar_asignaciones(df):
 
 def cargar_asignaciones(confirmado=True):
     conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='asignaciones'")
+    exists = cursor.fetchone()
+    if not exists:
+        conn.close()
+        return pd.DataFrame()
     query = "SELECT * FROM asignaciones"
     if confirmado:
         query += " WHERE Confirmado = 1"
@@ -50,4 +56,4 @@ def reset_db():
     c.execute("DROP TABLE IF EXISTS asignaciones")
     conn.commit()
     conn.close()
-    init_db()  # recrea la tabla después de borrarla
+    init_db()
