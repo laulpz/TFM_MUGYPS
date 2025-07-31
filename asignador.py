@@ -1,8 +1,10 @@
+
 import streamlit as st
 import pandas as pd
 import ast
 from datetime import datetime, timedelta
 from io import BytesIO
+from db_manager import guardar_asignaciones
 
 def ejecutar_asignador():
     st.set_page_config(page_title="Asignador de Turnos de Enfermería – Criterios SERMAS", layout="wide")
@@ -16,11 +18,7 @@ def ejecutar_asignador():
        - `Fechas_No_Disponibilidad` (lista `YYYY-MM-DD` separadas por comas)
     2. **Suba la demanda de turnos** (`.xlsx`) con las columnas:
        - `Fecha`, `Unidad`, `Turno` (`Mañana`/`Tarde`/`Noche`), `Personal_Requerido`
-    3. Pulse **Asignar turnos**. La herramienta:
-       - Respeta las **8 jornadas consecutivas** máximas.
-       - Controla el **límite anual de horas** (1 667,5 h diurnas; 1 490 h nocturnas).
-       - Ajusta asignaciones al **Turno_Contrato** y a las **fechas de indisponibilidad**.
-    4. Descargue la planilla generada y, si hubiera, el listado de turnos sin cubrir.
+    3. Pulse **Asignar turnos**.
     """)
 
     SHIFT_HOURS = {"Mañana": 7.5, "Tarde": 7.5, "Noche": 10}
@@ -75,14 +73,13 @@ def ejecutar_asignador():
 
                 if not cands.empty:
                     cands["Horas_Asignadas"] = cands["ID"].map(staff_hours)
-            cands["Jornadas_Asignadas"] = cands["ID"].map(lambda x: staff_dates[x].__len__())
+                    cands["Jornadas_Asignadas"] = cands["ID"].map(lambda x: len(staff_dates[x]))
 
-            def jornada_ok(row):
-                max_jornadas = 219 if row.Turno_Contrato in ["Mañana", "Tarde"] else 147
-                return row.Jornadas_Asignadas < max_jornadas
+                    def jornada_ok(row):
+                        max_jornadas = 219 if row.Turno_Contrato in ["Mañana", "Tarde"] else 147
+                        return row.Jornadas_Asignadas < max_jornadas
 
-            cands = cands[cands.apply(jornada_ok, axis=1)]
-
+                    cands = cands[cands.apply(jornada_ok, axis=1)]
 
                     def consecutive_ok(nurse_id):
                         fechas = staff_dates[nurse_id]
@@ -102,7 +99,6 @@ def ejecutar_asignador():
                                     break
                         return True
 
-                    cands = cands[cands["ID"].apply(consecutive_ok)]
                     def descanso_12h_ok(nurse_id):
                         fechas_previas = staff_dates[nurse_id]
                         if not fechas_previas:
@@ -114,12 +110,11 @@ def ejecutar_asignador():
                                 return False
                         return True
 
-                    cands = cands[cands["ID"].apply(descanso_12h_ok)]
-
-
                     def hours_ok(row):
                         return row.Horas_Asignadas + SHIFT_HOURS[turno] <= MAX_HOURS[row.Turno_Contrato]
 
+                    cands = cands[cands["ID"].apply(consecutive_ok)]
+                    cands = cands[cands["ID"].apply(descanso_12h_ok)]
                     cands = cands[cands.apply(hours_ok, axis=1)]
                     cands = cands.sort_values(by="Horas_Asignadas")
 
@@ -132,7 +127,9 @@ def ejecutar_asignador():
                             "Unidad": unidad,
                             "Turno": turno,
                             "ID_Enfermera": cand.ID,
-                            "Jornada": cand.Jornada
+                            "Jornada": cand.Jornada,
+                            "Horas_Acumuladas": SHIFT_HOURS[turno],
+                            "Confirmado": 0
                         })
                         staff_hours[cand.ID] += SHIFT_HOURS[turno]
                         staff_dates[cand.ID].append(fecha)
@@ -145,6 +142,9 @@ def ejecutar_asignador():
             st.success("✅ Asignación completada")
             st.subheader("📋 Planilla generada")
             st.dataframe(df_assign)
+
+            if not df_assign.empty:
+                guardar_asignaciones(df_assign)
 
             def to_excel_bytes(df):
                 output = BytesIO()
