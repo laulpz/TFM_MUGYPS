@@ -8,7 +8,7 @@ from db_manager import init_db, reset_db, guardar_asignaciones, cargar_asignacio
 st.set_page_config(page_title="Asignador único de Turnos – SERMAS", layout="wide")
 st.title("🩺 Planificador de Turnos de Enfermería (SERMAS)")
 
-init_db()
+    init_db()
 
 st.markdown("""
 Este formulario permite planificar automáticamente los turnos de enfermería para un rango de fechas personalizado.
