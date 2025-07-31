@@ -214,6 +214,7 @@ if st.session_state["asignacion_completada"]:
 
 # Generador de histórico mensual por profesional
 
+
 # Botón directo para exportar histórico mensual por profesional
 df_hist = cargar_asignaciones()
 if not df_hist.empty:
@@ -225,7 +226,13 @@ if not df_hist.empty:
         as_index=False
     ).agg({"Horas_Acumuladas": "sum", "Fecha": "count"})
     resumen_mensual = resumen_mensual.rename(
-        columns={"ID_Enfermera": "ID", "Fecha": "Jornadas Asignadas", "Horas_Acumuladas": "Horas Asignadas"}
+        columns={
+            "ID_Enfermera": "ID",
+            "Unidad": "Unidad Asignada",
+            "Turno": "Turno_Contrato",
+            "Fecha": "Jornadas Asignadas",
+            "Horas_Acumuladas": "Horas Asignadas"
+        }
     )
 
     def to_excel_bytes(df):
@@ -235,6 +242,12 @@ if not df_hist.empty:
         return output.getvalue()
 
     st.sidebar.download_button(
+        label="📤 Descargar histórico mensual por profesional",
+        data=to_excel_bytes(resumen_mensual),
+        file_name="Historico_Mensual_Profesional.xlsx",
+        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
+
         label="📤 Descargar histórico mensual por profesional",
         data=to_excel_bytes(resumen_mensual),
         file_name="Historico_Mensual_Profesional.xlsx",
