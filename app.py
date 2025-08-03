@@ -185,7 +185,6 @@ if file_staff and st.button("🚀 Ejecutar asignación"):
     st.session_state["df_uncov"] = df_uncov
     st.session_state["resumen_horas"] = resumen_horas
 
-
 if st.session_state["asignacion_completada"]:
     st.success("✅ Asignación completada")
     st.dataframe(st.session_state["df_assign"])
