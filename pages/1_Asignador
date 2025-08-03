@@ -1,0 +1,6 @@
+import streamlit as st
+from asignador import ejecutar_asignador
+
+st.set_page_config(page_title="Asignador de Turnos", layout="wide")
+st.title("📋 Asignador de Turnos de Enfermería")
+ejecutar_asignador()
