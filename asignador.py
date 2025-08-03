@@ -1,4 +1,3 @@
-
 import streamlit as st
 import pandas as pd
 import ast
@@ -22,7 +21,8 @@ def ejecutar_asignador():
     """)
 
     SHIFT_HOURS = {"Mañana": 7.5, "Tarde": 7.5, "Noche": 10}
-    MAX_HOURS = {"Mañana": 1642.5, "Tarde": 1642.5, "Noche": 1470}
+    BASE_MAX_HOURS = {"Mañana": 1642.5, "Tarde": 1642.5, "Noche": 1470}
+    BASE_MAX_JORNADAS = {"Mañana": 219, "Tarde": 219, "Noche": 147}
 
     st.sidebar.header("📂 Suba los archivos de entrada")
     file_staff = st.sidebar.file_uploader("Plantilla de personal (.xlsx)", type=["xlsx"])
@@ -44,6 +44,15 @@ def ejecutar_asignador():
                 return [d.strip() for d in str(cell).split(',')]
 
         staff["Fechas_No_Disponibilidad"] = staff["Fechas_No_Disponibilidad"].apply(parse_dates)
+
+        staff_max_hours = {
+            row.ID: BASE_MAX_HOURS[row.Turno_Contrato] * (0.8 if row.Jornada == "Parcial" else 1)
+            for _, row in staff.iterrows()
+        }
+        staff_max_jornadas = {
+            row.ID: BASE_MAX_JORNADAS[row.Turno_Contrato] * (0.8 if row.Jornada == "Parcial" else 1)
+            for _, row in staff.iterrows()
+        }
 
         st.subheader("👩‍⚕️ Personal cargado")
         st.dataframe(staff)
@@ -76,10 +85,7 @@ def ejecutar_asignador():
                     cands["Jornadas_Asignadas"] = cands["ID"].map(lambda x: len(staff_dates[x]))
 
                     def jornada_ok(row):
-                        max_jornadas = 219 if row.Turno_Contrato in ["Mañana", "Tarde"] else 147
-                        return row.Jornadas_Asignadas < max_jornadas
-
-                    cands = cands[cands.apply(jornada_ok, axis=1)]
+                        return len(staff_dates[row.ID]) < staff_max_jornadas[row.ID]
 
                     def consecutive_ok(nurse_id):
                         fechas = staff_dates[nurse_id]
@@ -111,8 +117,9 @@ def ejecutar_asignador():
                         return True
 
                     def hours_ok(row):
-                        return row.Horas_Asignadas + SHIFT_HOURS[turno] <= MAX_HOURS[row.Turno_Contrato]
+                        return staff_hours[row.ID] + SHIFT_HOURS[turno] <= staff_max_hours[row.ID]
 
+                    cands = cands[cands.apply(jornada_ok, axis=1)]
                     cands = cands[cands["ID"].apply(consecutive_ok)]
                     cands = cands[cands["ID"].apply(descanso_12h_ok)]
                     cands = cands[cands.apply(hours_ok, axis=1)]
