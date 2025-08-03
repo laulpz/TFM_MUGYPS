@@ -3,7 +3,7 @@ import pandas as pd
 import ast
 from datetime import datetime, timedelta, date
 from io import BytesIO
-from db_manager import init_db, cargar_horas, guardar_horas, guardar_asignaciones, cargar_asignaciones
+from db_manager import init_db, cargar_horas, guardar_horas, guardar_asignaciones, cargar_asignaciones, guardar_resumen_mensual
 
 st.set_page_config(page_title="Asignador único de Turnos – SERMAS", layout="wide")
 st.title("🩺 Planificador de Turnos de Enfermería (SERMAS)")
