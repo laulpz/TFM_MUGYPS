@@ -1,3 +1,4 @@
+
 import sqlite3
 import pandas as pd
 from pathlib import Path
@@ -25,7 +26,6 @@ def init_db():
             Horas_Acumuladas REAL
         )
     ''')
-    
     c.execute('''
         CREATE TABLE IF NOT EXISTS resumen_mensual (
             ID TEXT,
@@ -38,8 +38,7 @@ def init_db():
             Horas_Asignadas REAL
         )
     ''')
-
-conn.commit()
+    conn.commit()
     conn.close()
 
 def cargar_horas():
@@ -64,18 +63,20 @@ def cargar_asignaciones():
     conn.close()
     return df
 
+def guardar_resumen_mensual(df):
+    conn = sqlite3.connect(DB_PATH)
+    df.to_sql("resumen_mensual", conn, if_exists="append", index=False)
+    conn.close()
+
 def reset_db():
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
     c.execute("DROP TABLE IF EXISTS horas")
     c.execute("DROP TABLE IF EXISTS asignaciones")
+    c.execute("DROP TABLE IF EXISTS resumen_mensual")
     conn.commit()
     conn.close()
     init_db()
 
 
-def guardar_resumen_mensual(df):
-    conn = sqlite3.connect(DB_PATH)
-    df.to_sql("resumen_mensual", conn, if_exists="append", index=False)
-    conn.close()
 
