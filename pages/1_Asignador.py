@@ -4,7 +4,7 @@ import pandas as pd
 import ast
 from datetime import datetime, timedelta
 from io import BytesIO
-from db_manager_drive import (
+from db_manager import (
     init_db, guardar_asignaciones, guardar_resumen_mensual,
     descargar_bd_desde_drive, subir_bd_a_drive
 )
