@@ -25,7 +25,21 @@ def init_db():
             Horas_Acumuladas REAL
         )
     ''')
-    conn.commit()
+    
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS resumen_mensual (
+            ID TEXT,
+            Unidad TEXT,
+            Turno TEXT,
+            Jornada TEXT,
+            Año INTEGER,
+            Mes INTEGER,
+            Jornadas_Asignadas INTEGER,
+            Horas_Asignadas REAL
+        )
+    ''')
+
+conn.commit()
     conn.close()
 
 def cargar_horas():
@@ -58,3 +72,10 @@ def reset_db():
     conn.commit()
     conn.close()
     init_db()
+
+
+def guardar_resumen_mensual(df):
+    conn = sqlite3.connect(DB_PATH)
+    df.to_sql("resumen_mensual", conn, if_exists="append", index=False)
+    conn.close()
+
