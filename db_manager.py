@@ -1,10 +1,26 @@
-
 import sqlite3
 import pandas as pd
+import gdown
+import shutil
 from pathlib import Path
 
 DB_PATH = Path("turnos.db")
 
+# === Sincronización con Google Drive ===
+def descargar_bd_desde_drive(file_id):
+    url = f"https://drive.google.com/uc?id={file_id}"
+    output = str(DB_PATH)
+    try:
+        gdown.download(url, output, quiet=False)
+        print("📥 Base de datos descargada desde Google Drive")
+    except Exception as e:
+        print("❌ No se pudo descargar la base de datos:", e)
+
+def subir_bd_a_drive(file_id):
+    print("🔁 Subida automática a Google Drive aún no implementada directamente. Usa el archivo generado y súbelo manualmente.")
+    # Implementar subida con PyDrive si se requiere autenticación completa
+
+# === Funciones de gestión local ===
 def init_db():
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
@@ -77,6 +93,3 @@ def reset_db():
     conn.commit()
     conn.close()
     init_db()
-
-
-
