@@ -1,3 +1,4 @@
+
 import streamlit as st
 import pandas as pd
 import ast
@@ -60,7 +61,8 @@ file_staff = st.session_state["file_staff"]
 
 if file_staff and st.button("🚀 Ejecutar asignación"):
     SHIFT_HOURS = {"Mañana": 7.5, "Tarde": 7.5, "Noche": 10}
-    MAX_HOURS = {"Mañana": 1642.5, "Tarde": 1642.5, "Noche": 1470}
+    BASE_MAX_HOURS = {"Mañana": 1642.5, "Tarde": 1642.5, "Noche": 1470}
+    BASE_MAX_JORNADAS = {"Mañana": 219, "Tarde": 219, "Noche": 147}
 
     staff = pd.read_excel(file_staff)
     staff.columns = staff.columns.str.strip()
@@ -73,6 +75,15 @@ if file_staff and st.button("🚀 Ejecutar asignación"):
     staff["Fechas_No_Disponibilidad"] = staff["Fechas_No_Disponibilidad"].apply(parse_dates)
     st.subheader("👩‍⚕️ Personal cargado")
     st.dataframe(staff)
+
+    staff_max_hours = {
+        row.ID: BASE_MAX_HOURS[row.Turno_Contrato] * (0.8 if row.Jornada == "Parcial" else 1)
+        for _, row in staff.iterrows()
+    }
+    staff_max_jornadas = {
+        row.ID: BASE_MAX_JORNADAS[row.Turno_Contrato] * (0.8 if row.Jornada == "Parcial" else 1)
+        for _, row in staff.iterrows()
+    }
 
     start_date = datetime.combine(fecha_inicio, datetime.min.time())
     end_date = datetime.combine(fecha_fin, datetime.min.time())
@@ -106,8 +117,7 @@ if file_staff and st.button("🚀 Ejecutar asignación"):
             cands["Jornadas_Asignadas"] = cands["ID"].map(lambda x: staff_jornadas[x])
 
             def jornada_ok(row):
-                max_jornadas = 219 if row.Turno_Contrato in ["Mañana", "Tarde"] else 147
-                return row.Jornadas_Asignadas < max_jornadas
+                return staff_jornadas[row.ID] < staff_max_jornadas[row.ID]
 
             cands = cands[cands.apply(jornada_ok, axis=1)]
 
@@ -124,7 +134,7 @@ if file_staff and st.button("🚀 Ejecutar asignación"):
                             if consec >= 8: return False
                         else: break
                 return True
-            cands = cands[cands["ID"].apply(consecutive_ok)]
+
             def descanso_12h_ok(nurse_id):
                 fechas = staff_dates[nurse_id]
                 if not fechas:
@@ -136,8 +146,9 @@ if file_staff and st.button("🚀 Ejecutar asignación"):
                         return False
                 return True
 
+            cands = cands[cands["ID"].apply(consecutive_ok)]
             cands = cands[cands["ID"].apply(descanso_12h_ok)]
-
+            cands = cands[cands["ID"].apply(lambda x: staff_hours[x] + SHIFT_HOURS[turno] <= staff_max_hours[x])]
             cands = cands.sample(frac=1).sort_values(by="Horas_Asignadas")
         if not cands.empty:
             for _, cand in cands.iterrows():
@@ -160,11 +171,11 @@ if file_staff and st.button("🚀 Ejecutar asignación"):
     df_assign = pd.DataFrame(assignments)
     df_uncov = pd.DataFrame(uncovered) if uncovered else None
     resumen_horas = pd.DataFrame([{
-    "ID": id_,
-    "Turno_Contrato": staff.loc[staff.ID == id_, "Turno_Contrato"].values[0],
-    "Horas_Acumuladas": horas,
-    "Jornadas": len(staff_dates[id_])
-} for id_, horas in staff_hours.items()])
+        "ID": id_,
+        "Turno_Contrato": staff.loc[staff.ID == id_, "Turno_Contrato"].values[0],
+        "Horas_Acumuladas": horas,
+        "Jornadas": len(staff_dates[id_])
+    } for id_, horas in staff_hours.items()])
 
     if not df_prev.empty:
         resumen_horas = pd.concat([df_prev, resumen_horas]).groupby(["ID", "Turno_Contrato"], as_index=False).agg({"Horas_Acumuladas": "sum", "Jornadas": "sum"})
@@ -173,6 +184,7 @@ if file_staff and st.button("🚀 Ejecutar asignación"):
     st.session_state["df_assign"] = df_assign
     st.session_state["df_uncov"] = df_uncov
     st.session_state["resumen_horas"] = resumen_horas
+
 
 if st.session_state["asignacion_completada"]:
     st.success("✅ Asignación completada")
