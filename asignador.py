@@ -3,7 +3,7 @@ import pandas as pd
 import ast
 from datetime import datetime, timedelta
 from io import BytesIO
-from db_manager import guardar_asignaciones
+from db_manager import guardar_asignaciones, guardar_resumen_mensual
 
 def ejecutar_asignador():
     st.set_page_config(page_title="Asignador de Turnos de Enfermería – Criterios SERMAS", layout="wide")
@@ -153,6 +153,38 @@ def ejecutar_asignador():
             if not df_assign.empty:
                 guardar_asignaciones(df_assign)
 
+            if not df_assign.empty:
+                df_assign["Fecha"] = pd.to_datetime(df_assign["Fecha"])
+                df_assign["Año"] = df_assign["Fecha"].dt.year
+                df_assign["Mes"] = df_assign["Fecha"].dt.month
+
+                resumen_mensual = df_assign.groupby(
+                    ["ID_Enfermera", "Unidad", "Turno", "Jornada", "Año", "Mes"],
+                    as_index=False
+                ).agg({
+                    "Horas_Acumuladas": "sum",
+                    "Fecha": "count"
+                }).rename(columns={
+                    "ID_Enfermera": "ID",
+                    "Unidad": "Unidad Asignada",
+                    "Turno": "Turno_Contrato",
+                    "Fecha": "Jornadas Asignadas",
+                    "Horas_Acumuladas": "Horas Asignadas"
+                })
+
+                st.subheader("📊 Resumen mensual por profesional")
+                st.dataframe(resumen_mensual)
+
+                
+                guardar_resumen_mensual(resumen_mensual)
+st.download_button(
+                    label="⬇️ Descargar resumen mensual",
+                    data=to_excel_bytes(resumen_mensual),
+                    file_name="Resumen_Mensual_Profesional.xlsx",
+                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                )
+
+
             def to_excel_bytes(df):
                 output = BytesIO()
                 with pd.ExcelWriter(output, engine="openpyxl") as writer:
@@ -178,3 +210,4 @@ def ejecutar_asignador():
                 )
     else:
         st.info("🔄 Por favor, suba los dos archivos (personal y demanda) para comenzar.")
+
