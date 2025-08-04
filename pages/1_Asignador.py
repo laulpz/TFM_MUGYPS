@@ -9,10 +9,10 @@ from db_manager import (
 )
 
 st.set_page_config(page_title="Asignador", layout="wide")
-if st.session_state.get("reset"):
-    st.session_state["reset"] = False
-    st.stop()
-
+if "reset_db_done" in st.session_state and st.session_state["reset_db_done"]:
+    st.session_state["reset_db_done"] = False
+    st.rerun()
+    
 st.title("📋 Asignador de Turnos (Excel o Generador Manual)")
 
 # Configuración de base de datos
@@ -34,11 +34,10 @@ file_staff = st.sidebar.file_uploader("Plantilla de personal (.xlsx)", type=["xl
 # Botón para resetear
 st.sidebar.markdown("---")
 if st.sidebar.button("🗑️ Resetear base de datos"):
-    from db_manager import reset_db
     reset_db()
     st.sidebar.success("✅ Base de datos reiniciada correctamente.")
     st.session_state["reset"] = True
-    st.experimental_rerun()
+    st.session_state["reset_db_done"] = True
 
 
 # Selector de método de demanda (página principal)
