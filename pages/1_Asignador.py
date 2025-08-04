@@ -231,6 +231,13 @@ if file_staff:
 
         st.subheader("📊 Resumen mensual")
         st.dataframe(resumen_mensual)
+
+        def to_excel_bytes(df):
+            output = BytesIO()
+            with pd.ExcelWriter(output, engine="openpyxl", date_format="DD/MM/YYYY") as writer:
+                df.to_excel(writer, index=False)
+            return output.getvalue()
+        
         # Mostrar botones solo si los DataFrames siguen disponibles en sesión
         if "df_assign" in st.session_state:
             st.download_button(
@@ -245,12 +252,6 @@ if file_staff:
                 data=to_excel_bytes(st.session_state["resumen_mensual"]),
                 file_name="Resumen_Mensual.xlsx"
             )
-
-        def to_excel_bytes(df):
-            output = BytesIO()
-            with pd.ExcelWriter(output, engine="openpyxl", date_format="DD/MM/YYYY") as writer:
-                df.to_excel(writer, index=False)
-            return output.getvalue()
 
         st.download_button("⬇️ Descargar planilla asignada", data=to_excel_bytes(df_assign), file_name="Planilla_Asignada.xlsx")
         st.download_button("⬇️ Descargar resumen mensual", data=to_excel_bytes(resumen_mensual), file_name="Resumen_Mensual.xlsx")
