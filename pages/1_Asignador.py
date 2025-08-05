@@ -9,11 +9,12 @@ from db_manager import (
 )
 
 st.set_page_config(page_title="Asignador", layout="wide")
+st.title("📋 Asignador de Turnos de Enfermería")
+
+# Manejar recarga tras reseteo
 if "reset_db_done" in st.session_state and st.session_state["reset_db_done"]:
     st.session_state["reset_db_done"] = False
     st.rerun()
-    
-st.title("📋 Asignador de Turnos (Excel o Generador Manual)")
 
 # Configuración de base de datos
 FILE_ID = "1zqAyIB1BLfCc2uH1v29r-clARHoh2o_s"
@@ -27,10 +28,6 @@ BASE_MAX_JORNADAS = {"Mañana": 219, "Tarde": 219, "Noche": 147}
 dias_semana = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"]
 turnos = ["Mañana", "Tarde", "Noche"]
 
-# Subida plantilla de personal
-st.sidebar.header("📂 Suba la plantilla de personal")
-file_staff = st.sidebar.file_uploader("Plantilla de personal (.xlsx)", type=["xlsx"])
-
 # Botón para resetear
 st.sidebar.markdown("---")
 if st.sidebar.button("🗑️ Resetear base de datos"):
@@ -39,9 +36,41 @@ if st.sidebar.button("🗑️ Resetear base de datos"):
     st.session_state["reset"] = True
     st.session_state["reset_db_done"] = True
 
+# Subida plantilla de personal
+st.subheader("📂  Suba la plantilla de personal")
+file_staff = st.file_uploader("Plantilla de personal (.xlsx)", type=["xlsx"])
+
+if not file_staff:
+    st.info("🛈 Por favor, suba una plantilla de personal para continuar con la planificación.")
+    st.stop()
+
+# Carga plantilla
+staff = pd.read_excel(file_staff)
+staff.columns = staff.columns.str.strip()
+
+def parse_dates(cell):
+    if pd.isna(cell): return []
+    try: return [d.strip() for d in ast.literal_eval(str(cell))]
+    except: return [d.strip() for d in str(cell).split(',')]
+
+staff["Fechas_No_Disponibilidad"] = staff["Fechas_No_Disponibilidad"].apply(parse_dates)
+
+staff_max_hours = {
+    row.ID: BASE_MAX_HOURS[row.Turno_Contrato] * (0.8 if row.Jornada == "Parcial" else 1)
+    for _, row in staff.iterrows()
+}
+staff_max_jornadas = {
+    row.ID: BASE_MAX_JORNADAS[row.Turno_Contrato] * (0.8 if row.Jornada == "Parcial" else 1)
+    for _, row in staff.iterrows()
+}
+
+st.subheader("👩‍⚕️ Personal cargado")
+st.dataframe(staff)
+
 
 # Selector de método de demanda (página principal)
 metodo = st.selectbox("📈 Selecciona el método para ingresar la demanda:", ["Desde Excel", "Generar manualmente"])
+
 
 if file_staff:
     staff = pd.read_excel(file_staff)
