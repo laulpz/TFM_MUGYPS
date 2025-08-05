@@ -262,8 +262,13 @@ if file_staff:
             guardar_asignaciones(df_assign)
 
             df_assign["Fecha"] = pd.to_datetime(df_assign["Fecha"], dayfirst=True, errors='coerce')
+            if df_assign["Fecha"].isna().any():
+                st.error("❌ Error: Algunas fechas no se pudieron interpretar correctamente. No se puede generar el resumen.")
+                st.stop()
+                
             df_assign["Año"] = df_assign["Fecha"].dt.year
             df_assign["Mes"] = df_assign["Fecha"].dt.month
+
 
             resumen_mensual = df_assign.groupby(
                 ["ID_Enfermera", "Unidad", "Turno", "Jornada", "Año", "Mes"],
