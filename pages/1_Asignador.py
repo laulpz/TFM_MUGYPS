@@ -111,7 +111,6 @@ if file_staff:
                     "Personal_Requerido": demanda_por_dia[dia_cast][turno]
                 })
         demand = pd.DataFrame(demanda)
-        st.subheader("📆 Demanda generada")
         # st.dataframe(demand)
 
     elif metodo == "Desde Excel":
