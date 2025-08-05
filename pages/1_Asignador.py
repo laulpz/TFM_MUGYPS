@@ -313,9 +313,3 @@ if file_staff:
             data=to_excel_bytes(st.session_state["resumen_mensual"]),
             file_name="Resumen_Mensual.xlsx"
         )
-
-        if uncovered:
-            df_uncov = pd.DataFrame(uncovered)
-            st.subheader("⚠️ Turnos sin cubrir")
-            st.dataframe(df_uncov)
-            st.download_button("⬇️ Descargar turnos sin cubrir", data=to_excel_bytes(df_uncov), file_name="Turnos_Sin_Cubrir.xlsx")
