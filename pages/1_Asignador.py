@@ -134,11 +134,14 @@ if file_staff:
                     "Personal_Requerido": demanda_por_dia[dia_cast][turno]
                 })
         demand = pd.DataFrame(demanda)
-        st.dataframe(demand)
+        #st.dataframe(demand)
 
     
     
     if demand is not None and st.button("🚀 Ejecutar asignación"):
+        #Mostrar demanda
+        st.dataframe(demand)
+        
         staff_hours = {row.ID: 0 for _, row in staff.iterrows()}
         staff_dates = {row.ID: [] for _, row in staff.iterrows()}
         assignments, uncovered = [], []
