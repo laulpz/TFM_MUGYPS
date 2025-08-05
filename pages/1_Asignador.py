@@ -114,7 +114,7 @@ if file_staff:
         if fecha_fin <= fecha_inicio:
             st.warning("⚠️ La fecha fin debe ser posterior a la fecha inicio.")
             st.stop()
-
+"""
         if st.checkbox("✅ Confirmo que la configuración de demanda es definitiva"):
             fechas = [fecha_inicio + timedelta(days=i) for i in range((fecha_fin - fecha_inicio).days + 1)]
             demanda = []
@@ -133,7 +133,7 @@ if file_staff:
         
         else:
             st.warning("⚠️ Por favor, confirme que la configuración está lista para generar la demanda.")
-
+"""
         fechas = [fecha_inicio + timedelta(days=i) for i in range((fecha_fin - fecha_inicio).days + 1)]
         demanda = []
         for fecha in fechas:
