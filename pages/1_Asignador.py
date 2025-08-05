@@ -213,6 +213,28 @@ if file_staff:
         st.success("✅ Asignación completada")
         st.dataframe(df_assign)
 
+        # Guardar asignación temporal para revisión/descarga
+        st.session_state["df_assign"] = df_assign
+
+        # Convertir fechas para exportación (vista)
+        df_assign_export = df_assign.copy()
+        df_assign_export["Fecha"] = pd.to_datetime(df_assign_export["Fecha"], dayfirst=True, errors='coerce')
+        df_assign_export["Fecha"] = df_assign_export["Fecha"].dt.strftime("%d/%m/%Y")
+
+        # Botón de descarga inmediato
+        def to_excel_bytes(df):
+            output = BytesIO()
+            with pd.ExcelWriter(output, engine="openpyxl", date_format="DD/MM/YYYY") as writer:
+                df.to_excel(writer, index=False)
+            return output.getvalue()
+
+        st.download_button(
+            "⬇️ Descargar planilla sugerida",
+            data=to_excel_bytes(df_assign_export),
+            file_name="Planilla_Sugerida.xlsx",
+            key="descargar_sugerida"
+        )
+
         #Validación asignación
         st.subheader("¿Desea aprobar esta asignación?")
 
