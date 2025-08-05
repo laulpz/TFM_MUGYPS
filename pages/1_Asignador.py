@@ -51,10 +51,6 @@ staff.columns = staff.columns.str.strip()
 st.subheader("👩‍⚕️ Personal cargado")
 st.dataframe(staff)
 
-
-# Selector de método de demanda (página principal)
-metodo = st.selectbox("📈 Selecciona el método para ingresar la demanda:", ["Desde Excel", "Generar manualmente"])
-
 if file_staff:
     staff = pd.read_excel(file_staff)
     staff.columns = staff.columns.str.strip()
@@ -75,10 +71,22 @@ if file_staff:
         for _, row in staff.iterrows()
     }
 
+    # Selector de método de demanda (página principal)
+    metodo = st.selectbox("📈 Selecciona el método para ingresar la demanda:", ["Generar manualmente","Desde Excel"])
     demand = None
 
-
-    if metodo == "Generar manualmente":
+    if metodo == "Desde Excel":
+        st.subheader("📂 Subir archivo de demanda desde Excel")
+        file_demand = st.file_uploader("Demanda de turnos (.xlsx)", type=["xlsx"], key="file_demand_excel")
+        if file_demand:
+            demand = pd.read_excel(file_demand)
+            demand.columns = demand.columns.str.strip()
+            st.success("✅ Demanda cargada desde Excel")
+            st.dataframe(demand)
+        else:
+            st.info("🛈 Por favor, seleccione un archivo Excel con la demanda.")
+            
+    elif metodo == "Generar manualmente":
         st.subheader("⚙️ Generador de Demanda Manual")
         unidad = st.selectbox("Unidad Hospitalaria", ["Medicina Interna", "UCI", "Urgencias", "Oncología", "Quirófano"])
         col1, col2 = st.columns(2)
@@ -112,14 +120,6 @@ if file_staff:
                 })
         demand = pd.DataFrame(demanda)
         # st.dataframe(demand)
-
-    elif metodo == "Desde Excel":
-        file_demand = st.sidebar.file_uploader("Demanda de turnos (.xlsx)", type=["xlsx"])
-        if file_demand:
-            demand = pd.read_excel(file_demand)
-            demand.columns = demand.columns.str.strip()
-            st.subheader("📆 Demanda desde archivo")
-            st.dataframe(demand)
 
     
     
