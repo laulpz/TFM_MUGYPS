@@ -134,11 +134,12 @@ if file_staff:
                     "Personal_Requerido": demanda_por_dia[dia_cast][turno]
                 })
         demand = pd.DataFrame(demanda)
-        #st.dataframe(demand)
+        st.session_state['demand'] = demand
+        st.session_state['estado'] = 'demanda_generada'
 
     
     
-    if demand is not None and st.button("🚀 Ejecutar asignación"):
+    if st.session_state.get('estado') == 'demanda_generada' and st.button("🚀 Ejecutar asignación"):
         #Mostrar demanda
         st.subheader("Demanda generada")
         st.dataframe(demand)
