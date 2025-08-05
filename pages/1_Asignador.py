@@ -92,9 +92,6 @@ if file_staff:
         for _, row in staff.iterrows()
     }
 
-    st.subheader("👩‍⚕️ Personal cargado")
-    st.dataframe(staff)
-
     demand = None
 
     if metodo == "Desde Excel":
