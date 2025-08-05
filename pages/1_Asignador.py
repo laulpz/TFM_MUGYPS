@@ -296,32 +296,6 @@ if file_staff:
             st.session_state["resumen_mensual"] = resumen_mensual
             st.session_state["estado"] = "aprobado"
 
-                
-            df_assign["Año"] = df_assign["Fecha"].dt.year
-            df_assign["Mes"] = df_assign["Fecha"].dt.month
-
-
-            resumen_mensual = df_assign.groupby(
-                ["ID_Enfermera", "Unidad", "Turno", "Jornada", "Año", "Mes"],
-                as_index=False
-            ).agg({
-                "Horas_Acumuladas": "sum",
-                "Fecha": "count"
-            }).rename(columns={
-                "ID_Enfermera": "ID",
-                "Fecha": "Jornadas_Asignadas",
-                "Horas_Acumuladas": "Horas_Asignadas"
-            })
-
-            guardar_resumen_mensual(resumen_mensual)
-            subir_bd_a_drive(FILE_ID)
-
-            df_assign["Fecha"] = df_assign["Fecha"].dt.strftime("%d/%m/%Y")
-
-            st.session_state["df_assign"] = df_assign
-            st.session_state["resumen_mensual"] = resumen_mensual
-            st.session_state["estado"] = "aprobado"
-
         elif col2.button("🔁 Volver a generar asignación"):
             del st.session_state["df_assign"]
             st.session_state["estado"] = "inicial"
