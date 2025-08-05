@@ -258,13 +258,44 @@ if file_staff:
         col1, col2 = st.columns(2)
 
         if col1.button("✅ Aprobar asignación"):
-            df_assign = st.session_state["df_assign"]
-            guardar_asignaciones(df_assign)
+            # Obtener asignación original
+            df_assign = st.session_state["df_assign"].copy()
 
+            # Convertir fecha en formato real para resumen
             df_assign["Fecha"] = pd.to_datetime(df_assign["Fecha"], dayfirst=True, errors='coerce')
             if df_assign["Fecha"].isna().any():
                 st.error("❌ Error: Algunas fechas no se pudieron interpretar correctamente. No se puede generar el resumen.")
                 st.stop()
+
+            # Generar resumen
+            guardar_asignaciones(df_assign)
+
+            df_assign["Año"] = df_assign["Fecha"].dt.year
+            df_assign["Mes"] = df_assign["Fecha"].dt.month
+
+            resumen_mensual = df_assign.groupby(
+                ["ID_Enfermera", "Unidad", "Turno", "Jornada", "Año", "Mes"],
+                as_index=False
+            ).agg({
+                "Horas_Acumuladas": "sum",
+                "Fecha": "count"
+            }).rename(columns={
+                "ID_Enfermera": "ID",
+                "Fecha": "Jornadas_Asignadas",
+                "Horas_Acumuladas": "Horas_Asignadas"
+            })
+
+            guardar_resumen_mensual(resumen_mensual)
+            subir_bd_a_drive(FILE_ID)
+
+            # Para exportación, mostrar la fecha como string sin alterar el original
+            df_assign["Fecha"] = df_assign["Fecha"].dt.strftime("%d/%m/%Y")
+
+            # Guardar en sesión para mostrar y descargar
+            st.session_state["df_assign"] = df_assign
+            st.session_state["resumen_mensual"] = resumen_mensual
+            st.session_state["estado"] = "aprobado"
+
                 
             df_assign["Año"] = df_assign["Fecha"].dt.year
             df_assign["Mes"] = df_assign["Fecha"].dt.month
