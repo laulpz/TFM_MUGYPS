@@ -257,9 +257,10 @@ if file_staff:
             st.warning("🔄 Reintentando asignación desde el principio...")
             st.rerun()
 
-        st.subheader("📊 Resumen mensual")
-        st.dataframe(resumen_mensual)
-
+        if "resumen_mensual" in st.session_state:
+            st.subheader("📊 Resumen mensual")
+            st.dataframe(st.session_state["resumen_mensual"])
+    
         def to_excel_bytes(df):
             output = BytesIO()
             with pd.ExcelWriter(output, engine="openpyxl", date_format="DD/MM/YYYY") as writer:
