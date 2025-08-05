@@ -48,6 +48,7 @@ if not file_staff:
 staff = pd.read_excel(file_staff)
 staff.columns = staff.columns.str.strip()
 
+"""
 def parse_dates(cell):
     if pd.isna(cell): return []
     try: return [d.strip() for d in ast.literal_eval(str(cell))]
@@ -63,6 +64,7 @@ staff_max_jornadas = {
     row.ID: BASE_MAX_JORNADAS[row.Turno_Contrato] * (0.8 if row.Jornada == "Parcial" else 1)
     for _, row in staff.iterrows()
 }
+"""
 
 st.subheader("👩‍⚕️ Personal cargado")
 st.dataframe(staff)
@@ -70,7 +72,6 @@ st.dataframe(staff)
 
 # Selector de método de demanda (página principal)
 metodo = st.selectbox("📈 Selecciona el método para ingresar la demanda:", ["Desde Excel", "Generar manualmente"])
-
 
 if file_staff:
     staff = pd.read_excel(file_staff)
@@ -121,6 +122,24 @@ if file_staff:
         if fecha_fin <= fecha_inicio:
             st.warning("⚠️ La fecha fin debe ser posterior a la fecha inicio.")
             st.stop()
+
+        if st.checkbox("✅ Confirmo que la configuración de demanda es definitiva"):
+            fechas = [fecha_inicio + timedelta(days=i) for i in range((fecha_fin - fecha_inicio).days + 1)]
+            demanda = []
+            for fecha in fechas:
+                dia_cast = dias_semana[fecha.weekday()]
+                for turno in turnos:
+                    demanda.append({
+                        "Fecha": fecha.strftime("%Y-%m-%d"),
+                        "Unidad": unidad,
+                        "Turno": turno,
+                        "Personal_Requerido": demanda_por_dia[dia_cast][turno]
+                    })
+            demand = pd.DataFrame(demanda)
+            st.success("✅ Demanda generada correctamente. Puede proceder a ejecutar la asignación.")
+            st.dataframe(demand)
+        else:
+            st.warning("⚠️ Por favor, confirme que la configuración está lista para generar la demanda.")
 
         fechas = [fecha_inicio + timedelta(days=i) for i in range((fecha_fin - fecha_inicio).days + 1)]
         demanda = []
