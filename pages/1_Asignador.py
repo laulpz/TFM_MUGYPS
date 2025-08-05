@@ -221,6 +221,7 @@ if file_staff:
         if col_aprobar.button("✅ Aprobar asignación"):
             guardar_asignaciones(df_assign)
 
+            #Conversión segura de fechas
             df_assign["Fecha"] = pd.to_datetime(df_assign["Fecha"], dayfirst=True, errors='coerce')
             if df_assign["Fecha"].isna().any():
                 st.warning("⚠️ Fechas inválidas detectadas. Revisa los datos.")
@@ -244,6 +245,9 @@ if file_staff:
             guardar_resumen_mensual(resumen_mensual)
             subir_bd_a_drive(FILE_ID)
 
+            # ✅ Solo después del resumen, aplicar formato corto
+            df_assign["Fecha"] = df_assign["Fecha"].dt.strftime("%d/%m/%Y")
+            
             st.session_state["df_assign"] = df_assign
             st.session_state["resumen_mensual"] = resumen_mensual
 
@@ -255,39 +259,8 @@ if file_staff:
 
         guardar_asignaciones(df_assign)
 
-        # Conversión segura de fechas
-        df_assign["Fecha"] = pd.to_datetime(df_assign["Fecha"], dayfirst=True, errors='coerce')
-
-        # Validación de fechas inválidas
-        if df_assign["Fecha"].isna().any():
-            st.warning("⚠️ Algunas fechas no se pudieron interpretar correctamente. Por favor, revisa el origen.")
-            st.stop()
-
-        # Extraer Año y Mes para el resumen mensual
-        df_assign["Año"] = df_assign["Fecha"].dt.year
-        df_assign["Mes"] = df_assign["Fecha"].dt.month
-
-        resumen_mensual = df_assign.groupby(
-            ["ID_Enfermera", "Unidad", "Turno", "Jornada", "Año", "Mes"],
-            as_index=False
-        ).agg({
-            "Horas_Acumuladas": "sum",
-            "Fecha": "count"
-        }).rename(columns={
-            "ID_Enfermera": "ID",
-            "Fecha": "Jornadas_Asignadas",
-            "Horas_Acumuladas": "Horas_Asignadas"
-        })
-
         guardar_resumen_mensual(resumen_mensual)
         subir_bd_a_drive(FILE_ID)
-
-        # Convertir fechas al formato dd/mm/yyyy para el Excel
-        df_assign["Fecha"] = pd.to_datetime(df_assign["Fecha"]).dt.strftime("%d/%m/%Y")
-
-        # Guardar los DataFrames en el estado de sesión para mantenerlos después de recargar
-        st.session_state["df_assign"] = df_assign
-        st.session_state["resumen_mensual"] = resumen_mensual
 
         st.subheader("📊 Resumen mensual")
         st.dataframe(resumen_mensual)
