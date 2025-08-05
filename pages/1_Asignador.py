@@ -290,10 +290,11 @@ if file_staff:
             subir_bd_a_drive(FILE_ID)
 
             # Para exportación, mostrar la fecha como string sin alterar el original
-            df_assign["Fecha"] = df_assign["Fecha"].dt.strftime("%d/%m/%Y")
+            df_vista = df_assign.copy()
+            df_vista["Fecha"] = df_vista["Fecha"].dt.strftime("%d/%m/%Y")
 
             # Guardar en sesión para mostrar y descargar
-            st.session_state["df_assign"] = df_assign
+            st.session_state["df_assign"] = df_vista
             st.session_state["resumen_mensual"] = resumen_mensual
             st.session_state["estado"] = "aprobado"
 
@@ -304,7 +305,10 @@ if file_staff:
 
     elif st.session_state["estado"] == "aprobado":
         st.success("✅ Asignación aprobada")
+        st.subheader("📄 Asignación final")
         st.dataframe(st.session_state["df_assign"])
+
+        
         st.subheader("📊 Resumen mensual")
         st.dataframe(st.session_state["resumen_mensual"])
 
@@ -319,6 +323,7 @@ if file_staff:
             data=to_excel_bytes(st.session_state["df_assign"]),
             file_name="Planilla_Asignada.xlsx"
         )
+        
         st.download_button(
             "⬇️ Descargar resumen mensual",
             data=to_excel_bytes(st.session_state["resumen_mensual"]),
