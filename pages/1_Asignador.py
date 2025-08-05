@@ -140,6 +140,7 @@ if file_staff:
     
     if demand is not None and st.button("🚀 Ejecutar asignación"):
         #Mostrar demanda
+        st.subheader("Demanda generada")
         st.dataframe(demand)
         
         staff_hours = {row.ID: 0 for _, row in staff.iterrows()}
