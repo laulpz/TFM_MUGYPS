@@ -215,7 +215,15 @@ if file_staff:
 
         guardar_asignaciones(df_assign)
 
-        df_assign["Fecha"] = pd.to_datetime(df_assign["Fecha"], dayfirst=True)
+        # Conversión segura de fechas
+        df_assign["Fecha"] = pd.to_datetime(df_assign["Fecha"], dayfirst=True, errors='coerce')
+
+        # Validación de fechas inválidas
+        if df_assign["Fecha"].isna().any():
+            st.warning("⚠️ Algunas fechas no se pudieron interpretar correctamente. Por favor, revisa el origen.")
+            st.stop()
+
+        # Extraer Año y Mes para el resumen mensual
         df_assign["Año"] = df_assign["Fecha"].dt.year
         df_assign["Mes"] = df_assign["Fecha"].dt.month
 
