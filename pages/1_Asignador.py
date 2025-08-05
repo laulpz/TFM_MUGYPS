@@ -257,11 +257,6 @@ if file_staff:
             st.warning("🔄 Reintentando asignación desde el principio...")
             st.rerun()
 
-        guardar_asignaciones(df_assign)
-
-        guardar_resumen_mensual(resumen_mensual)
-        subir_bd_a_drive(FILE_ID)
-
         st.subheader("📊 Resumen mensual")
         st.dataframe(resumen_mensual)
 
