@@ -103,7 +103,7 @@ if metodo == "Desde Excel":
         demand.columns = demand.columns.str.strip()
         st.success("✅ Demanda cargada desde Excel")
         st.dataframe(demand)
-     else:
+    else:
         st.info("🛈 Por favor, seleccione un archivo Excel con la demanda.")
             
 elif metodo == "Generar manualmente":
