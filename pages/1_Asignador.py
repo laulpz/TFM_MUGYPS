@@ -104,7 +104,7 @@ if metodo == "Desde Excel":
         st.success("✅ Demanda cargada desde Excel")
         st.dataframe(demand)
      else:
-           st.info("🛈 Por favor, seleccione un archivo Excel con la demanda.")
+        st.info("🛈 Por favor, seleccione un archivo Excel con la demanda.")
             
 elif metodo == "Generar manualmente":
     st.subheader("⚙️ Generador de Demanda Manual")
