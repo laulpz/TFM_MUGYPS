@@ -149,7 +149,6 @@ if st.session_state.get("estado") == "demanda_generada" and "demand" in st.sessi
     if st.button("🧠 Ejecutar asignación"):
         demand = st.session_state["demand"].copy()
         staff = st.session_state["staff"].copy()
-        staff_ids = staff.ID.tolist()
         asignaciones = []
         st.write("👀 Demand preview:", demand.head())
         st.write("📦 Columnas de demand:", list(demand.columns))
