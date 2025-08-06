@@ -2,7 +2,6 @@
 import streamlit as st
 import pandas as pd
 import ast
-import time
 from datetime import datetime, timedelta, date
 from io import BytesIO
 from db_manager import (
@@ -17,8 +16,6 @@ st.title("📋 Asignador de Turnos de Enfermería")
 # --- Estados iniciales de la aplicación ---
 if "estado" not in st.session_state:
     st.session_state["estado"] = "inicial"
-
-st.sidebar.markdown(f"🧪 Estado actual: `{st.session_state.get('estado', 'no definido')}`")
     
 # Manejar recarga tras reseteo
 if "reset_db_done" in st.session_state and st.session_state["reset_db_done"]:
@@ -90,6 +87,7 @@ staff_max_jornadas = {
      row.ID: BASE_MAX_JORNADAS[row.Turno_Contrato] * (0.8 if row.Jornada == "Parcial" else 1)
      for _, row in staff.iterrows()
  }
+
 st.subheader("👩‍⚕️ Personal cargado")
 st.dataframe(staff)
 
@@ -138,83 +136,162 @@ elif metodo == "Generar manualmente":
     st.session_state['estado'] = 'demanda_generada'
 
 # --- Sección de asignación ---
-if st.session_state.get("estado") == "demanda_generada":
-    st.subheader("🔄 Asignar turnos automáticamente")
+if st.session_state.get('estado') == 'demanda_generada':
+    if st.button("🚀 Ejecutar asignación"):
+        with st.spinner("Procesando asignación de turnos..."):
+            staff_hours = {row.ID: 0 for _, row in staff.iterrows()}
+            staff_dates = {row.ID: [] for _, row in staff.iterrows()}
+            assignments, uncovered = [], []
+            demand_sorted = demand.sort_values(by="Fecha")
 
-    if st.button("🧠 Ejecutar asignación"):
-        demand = st.session_state["demand"].copy()
-        staff_ids = staff.ID.tolist()
-        asignaciones = []
+            for _, dem in demand_sorted.iterrows():
+                fecha, unidad, turno, req = dem["Fecha"], dem["Unidad"], dem["Turno"], dem["Personal_Requerido"]
+                assigned_count = 0
 
-        for _, fila in demand.iterrows():
-            fecha, unidad, turno, requerido = fila["Fecha"], fila["Unidad"], fila["Turno"], fila["Personal_Requerido"]
-            asignados = staff.sample(n=min(requerido, len(staff)), replace=False)
+                cands = staff[
+                    (staff["Unidad_Asignada"] == unidad) &
+                    (staff["Turno_Contrato"] == turno) &
+                    (~staff["Fechas_No_Disponibilidad"].apply(lambda lst: fecha in lst))
+                ].copy()
 
-            for _, enfermera in asignados.iterrows():
-                asignaciones.append({
-                    "Fecha": fecha,
-                    "ID_Enfermera": enfermera["ID"],
-                    "Unidad": unidad,
-                    "Turno": turno,
-                    "Jornada": enfermera["Jornada"],
-                    "Horas_Acumuladas": SHIFT_HOURS[turno]
-                })
+                cands["Horas_Asignadas"] = cands["ID"].map(staff_hours)
+                cands["Jornadas_Asignadas"] = cands["ID"].map(lambda x: len(staff_dates[x]))
 
-        df_asignacion = pd.DataFrame(asignaciones)
-        st.session_state["df_assign"] = df_asignacion
-        st.session_state["estado"] = "asignado"
-        st.rerun()
+                def jornada_ok(row):
+                    return len(staff_dates[row.ID]) < staff_max_jornadas[row.ID]
 
-# --- Visualización y aprobación ---
+                def consecutive_ok(nurse_id):
+                    fechas = staff_dates[nurse_id]
+                    if not fechas:
+                        return True
+                    last_date = max(fechas)
+                    if (datetime.strptime(fecha, "%Y-%m-%d") - datetime.strptime(last_date, "%Y-%m-%d")).days == 1:
+                        consec = 1
+                        check_date = datetime.strptime(last_date, "%Y-%m-%d")
+                        while True:
+                            check_date -= timedelta(days=1)
+                            if check_date.strftime("%Y-%m-%d") in fechas:
+                                consec += 1
+                                if consec >= 8:
+                                    return False
+                            else:
+                                break
+                    return True
+
+                def descanso_12h_ok(nurse_id):
+                    fechas_previas = staff_dates[nurse_id]
+                    if not fechas_previas:
+                        return True
+                    fecha_actual = datetime.strptime(fecha, "%Y-%m-%d")
+                    for fecha_ant in fechas_previas:
+                        fecha_prev = datetime.strptime(fecha_ant, "%Y-%m-%d")
+                        if abs((fecha_actual - fecha_prev).total_seconds()) < 12 * 3600:
+                            return False
+                    return True
+
+                def hours_ok(row):
+                    return staff_hours[row.ID] + SHIFT_HOURS[turno] <= staff_max_hours[row.ID]
+
+                cands = cands[cands.apply(jornada_ok, axis=1)]
+                cands = cands[cands["ID"].apply(consecutive_ok)]
+                cands = cands[cands["ID"].apply(descanso_12h_ok)]
+                cands = cands[cands.apply(hours_ok, axis=1)]
+                cands = cands.sort_values(by="Horas_Asignadas")
+
+                for _, cand in cands.iterrows():
+                    if assigned_count >= req:
+                        break
+                    assignments.append({
+                        "Fecha": fecha,
+                        "Unidad": unidad,
+                        "Turno": turno,
+                        "ID_Enfermera": cand.ID,
+                        "Jornada": cand.Jornada,
+                        "Horas_Acumuladas": SHIFT_HOURS[turno],
+                        "Confirmado": 0
+                    })
+                    staff_hours[cand.ID] += SHIFT_HOURS[turno]
+                    staff_dates[cand.ID].append(fecha)
+                    assigned_count += 1
+
+                if assigned_count < req:
+                    uncovered.append({"Fecha": fecha, "Unidad": unidad, "Turno": turno, "Faltan": req - assigned_count})
+
+            df_assign = pd.DataFrame(assignments).drop(columns=["Confirmado"], errors="ignore")
+            st.session_state["df_assign"] = df_assign
+            st.session_state["estado"] = "asignado"
+            st.success("✅ Asignación completada")
+
+
+# --- Sección de visualización y aprobación ---
 if st.session_state.get("estado") == "asignado":
     st.subheader("📝 Asignación sugerida")
     st.dataframe(st.session_state["df_assign"])
 
+    # Botón para descargar antes de aprobar
+    st.download_button(
+        "⬇️ Descargar planilla sugerida",
+        data=to_excel_bytes(st.session_state["df_assign"]),
+        file_name="Planilla_Sugerida.xlsx"
+    )
+
+    st.subheader("¿Desea aprobar esta asignación?")
     col1, col2 = st.columns(2)
+
     if col1.button("✅ Aprobar asignación"):
-        try:
-            df_assign = st.session_state["df_assign"].copy()
-            df_assign["Fecha"] = pd.to_datetime(df_assign["Fecha"], dayfirst=True, errors='coerce')
-            if df_assign["Fecha"].isna().any():
-                st.error("❌ Fechas inválidas en la asignación.")
+        st.session_state["aprobacion_confirmada"] = True
+
+    if st.session_state.get("aprobacion_confirmada"):
+        with st.spinner("Guardando y subiendo asignación..."):
+            try:
+                df_assign = st.session_state["df_assign"].copy()
+                df_assign["Fecha"] = pd.to_datetime(df_assign["Fecha"], dayfirst=True, errors='coerce')
+                if df_assign["Fecha"].isna().any():
+                    st.error("❌ Error: Algunas fechas no se pudieron interpretar correctamente. No se puede generar el resumen.")
+                    st.stop()
+
+                guardar_asignaciones(df_assign)
+
+                df_assign["Año"] = df_assign["Fecha"].dt.year
+                df_assign["Mes"] = df_assign["Fecha"].dt.month
+
+                resumen_mensual = df_assign.groupby(
+                    ["ID_Enfermera", "Unidad", "Turno", "Jornada", "Año", "Mes"],
+                    as_index=False
+                ).agg({
+                    "Horas_Acumuladas": "sum",
+                    "Fecha": "count"
+                }).rename(columns={
+                    "ID_Enfermera": "ID",
+                    "Fecha": "Jornadas_Asignadas",
+                    "Horas_Acumuladas": "Horas_Asignadas"
+                })
+
+                guardar_resumen_mensual(resumen_mensual)
+                subir_bd_a_drive(FILE_ID)
+
+                df_vista = df_assign.copy()
+                df_vista["Fecha"] = df_vista["Fecha"].dt.strftime("%d/%m/%Y")
+
+                st.session_state["df_assign"] = df_vista
+                st.session_state["resumen_mensual"] = resumen_mensual
+                st.session_state["estado"] = "aprobado"
+                st.session_state["aprobacion_confirmada"] = False
+
+                st.success("✅ Asignación aprobada y base de datos actualizada.")
+
+            except Exception as e:
+                st.error(f"❌ Error al guardar: {e}")
                 st.stop()
-
-            df_assign["Año"] = df_assign["Fecha"].dt.year
-            df_assign["Mes"] = df_assign["Fecha"].dt.month
-
-            resumen = df_assign.groupby(
-                ["ID_Enfermera", "Unidad", "Turno", "Jornada", "Año", "Mes"],
-                as_index=False
-            ).agg({
-                "Horas_Acumuladas": "sum",
-                "Fecha": "count"
-            }).rename(columns={
-                "ID_Enfermera": "ID",
-                "Fecha": "Jornadas_Asignadas",
-                "Horas_Acumuladas": "Horas_Asignadas"
-            })
-
-            guardar_asignaciones(df_assign)
-            guardar_resumen_mensual(resumen)
-            subir_bd_a_drive(FILE_ID)
-
-            df_assign["Fecha"] = df_assign["Fecha"].dt.strftime("%d/%m/%Y")
-            st.session_state["df_assign"] = df_assign
-            st.session_state["resumen_mensual"] = resumen
-            st.session_state["estado"] = "aprobado"
-            st.success("✅ Asignación aprobada y datos guardados.")
-            st.rerun()
-
-        except Exception as e:
-            st.error(f"❌ Error durante aprobación: {e}")
 
     if col2.button("🔁 Volver a generar asignación"):
         del st.session_state["df_assign"]
-        st.session_state["estado"] = "demanda_generada"
-        st.rerun()
+        st.session_state["estado"] = "inicial"
 
-# --- Descarga final ---
+# --- Sección final: descarga tras aprobación ---
 if st.session_state.get("estado") == "aprobado":
+    st.success("✅ Asignación aprobada")
+
     st.subheader("📄 Asignación final")
     st.dataframe(st.session_state["df_assign"])
 
@@ -232,4 +309,6 @@ if st.session_state.get("estado") == "aprobado":
         data=to_excel_bytes(st.session_state["resumen_mensual"]),
         file_name="Resumen_Mensual.xlsx"
     )
+
+
 
