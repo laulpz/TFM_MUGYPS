@@ -126,7 +126,6 @@ elif metodo == "Generar manualmente":
             for i, turno in enumerate(turnos)
         }
     
-
     fechas = [fecha_inicio + timedelta(days=i) for i in range((fecha_fin - fecha_inicio).days + 1)]
     demanda = [
         {"Fecha": fecha.strftime("%Y-%m-%d"), "Unidad": unidad, "Turno": turno, "Personal_Requerido": demanda_por_dia[dias_semana[fecha.weekday()]][turno]}
