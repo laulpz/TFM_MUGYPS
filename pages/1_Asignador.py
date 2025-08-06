@@ -237,7 +237,8 @@ if st.session_state.get("estado") == "asignado" and "df_assign" in st.session_st
                 st.session_state["resumen_mensual"] = resumen
                 st.session_state["estado"] = "aprobado"
                 st.success("✅ Asignación aprobada y datos guardados.")
-                st.rerun()
+                st.write("🧭 Estado actual:", st.session_state.get("estado"))
+                #st.rerun()
 
             except Exception as e:
                 st.error(f"❌ Error durante aprobación: {e}")
