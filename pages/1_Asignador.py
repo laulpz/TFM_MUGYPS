@@ -175,7 +175,7 @@ if st.session_state.get("estado") == "demanda_generada" and "demand" in st.sessi
         st.rerun()
 
 # --- Visualización y aprobación ---
-if st.session_state.get("estado") == "asignado" and "df_assign" in st.session_state:
+if st.session_state.get("estado") == "asignado":
     st.subheader("📝 Asignación sugerida")
     st.dataframe(st.session_state["df_assign"])
 
