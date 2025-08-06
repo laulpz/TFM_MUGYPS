@@ -111,7 +111,7 @@ elif metodo == "Generar manualmente":
     unidad = st.selectbox("Unidad Hospitalaria", ["Medicina Interna", "UCI", "Urgencias", "Oncología", "Quirófano"])
     col1, col2 = st.columns(2)
     fecha_inicio = col1.date_input("Fecha de inicio", value=date(2025, 1, 1))
-    fecha_fin = col2.date_input("Fecha de fin", value=date(2025, 31, 1))
+    fecha_fin = col2.date_input("Fecha de fin", value=date(2025, 1, 31))
 
     if fecha_fin <= fecha_inicio:
         st.warning("⚠️ La fecha fin debe ser posterior a la fecha inicio.")
