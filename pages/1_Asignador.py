@@ -149,12 +149,20 @@ if st.session_state.get("estado") == "demanda_generada" and "demand" in st.sessi
         demand = st.session_state["demand"].copy()
         staff = st.session_state["staff"].copy()
         asignaciones = []
+        st.write("📋 Demand columnas:", demand.columns.tolist())
+        st.write("📊 Primeras filas:", demand.head())
+
 
         for _, fila in demand.iterrows():
-            fecha = fila["Fecha"]
-            unidad = fila["Unidad"]
-            turno = fila["Turno"]
-            requerido = int(fila["Personal_Requerido"])
+            try:
+                fecha = fila["Fecha"]
+                unidad = fila["Unidad"]
+                turno = fila["Turno"]
+                requerido = int(fila["Personal_Requerido"])
+            except KeyError as e:
+                st.error(f"❌ Falta la columna requerida en la demanda: {e}")
+                st.stop()
+           
             if requerido <= 0:
                 continue
 
