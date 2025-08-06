@@ -153,11 +153,11 @@ if st.session_state.get("estado") == "demanda_generada":
             for _, enfermera in asignados.iterrows():
                 asignaciones.append({
                     "Fecha": fecha,
-                    "ID_Enfermera": enfermera.ID,
-                    "Nombre": enfermera.Nombre,
+                    "ID_Enfermera": enfermera["ID"],
+                    "Nombre": enfermera["Nombre"],
                     "Unidad": unidad,
                     "Turno": turno,
-                    "Jornada": enfermera.Jornada,
+                    "Jornada": enfermera["Jornada"],
                     "Horas_Acumuladas": SHIFT_HOURS[turno]
                 })
 
