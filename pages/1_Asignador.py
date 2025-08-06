@@ -298,17 +298,18 @@ if file_staff:
             st.session_state["resumen_mensual"] = resumen_mensual
             st.session_state["estado"] = "aprobado"
 
+        # Mostrar mensaje sin reiniciar
+        st.success("✅ Asignación aprobada. Puedes descargar los archivos.")
+
         elif col2.button("🔁 Volver a generar asignación"):
             del st.session_state["df_assign"]
             st.session_state["estado"] = "inicial"
-            st.rerun()
 
     elif st.session_state["estado"] == "aprobado":
         st.success("✅ Asignación aprobada")
         st.subheader("📄 Asignación final")
         st.dataframe(st.session_state["df_assign"])
 
-        
         st.subheader("📊 Resumen mensual")
         st.dataframe(st.session_state["resumen_mensual"])
 
