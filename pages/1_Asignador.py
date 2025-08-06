@@ -77,10 +77,7 @@ if not file_staff:
 staff = pd.read_excel(file_staff)
 staff.columns = staff.columns.str.strip()
 staff["Fechas_No_Disponibilidad"] = staff["Fechas_No_Disponibilidad"].apply(parse_dates)
-
-if plantilla_subida:
-    staff = pd.read_excel(plantilla_subida)
-    st.session_state["staff"] = staff  # ✅ IMPORTANTE
+st.session_state["staff"] = staff  # ✅ IMPORTANTE
 
 # --- Cálculo de horas y jornadas permitidas ---
 staff_max_hours = {
