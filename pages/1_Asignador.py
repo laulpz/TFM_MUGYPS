@@ -2,6 +2,7 @@
 import streamlit as st
 import pandas as pd
 import ast
+import time
 from datetime import datetime, timedelta, date
 from io import BytesIO
 from db_manager import (
@@ -277,8 +278,11 @@ if st.session_state.get("estado") == "asignado":
                 st.session_state["resumen_mensual"] = resumen_mensual
                 st.session_state["estado"] = "aprobado"
                 st.session_state["aprobacion_confirmada"] = False
-
                 st.success("✅ Asignación aprobada y base de datos actualizada.")
+                time.sleep(1)
+                st.rerun()  # 🔄 Fuerza recarga para mostrar botones de descarga
+
+
 
             except Exception as e:
                 st.error(f"❌ Error al guardar: {e}")
