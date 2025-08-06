@@ -297,7 +297,6 @@ if file_staff:
             st.session_state["df_assign"] = df_vista
             st.session_state["resumen_mensual"] = resumen_mensual
             st.session_state["estado"] = "aprobado"
-            st.rerun()
 
         elif col2.button("🔁 Volver a generar asignación"):
             del st.session_state["df_assign"]
