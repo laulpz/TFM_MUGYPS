@@ -259,47 +259,51 @@ if file_staff:
         col1, col2 = st.columns(2)
 
         if col1.button("✅ Aprobar asignación"):
-            # Obtener asignación original
-            df_assign = st.session_state["df_assign"].copy()
-
-            # Convertir fecha en formato real para resumen
-            df_assign["Fecha"] = pd.to_datetime(df_assign["Fecha"], dayfirst=True, errors='coerce')
-            if df_assign["Fecha"].isna().any():
-                st.error("❌ Error: Algunas fechas no se pudieron interpretar correctamente. No se puede generar el resumen.")
-                st.stop()
-
-            # Generar resumen
-            guardar_asignaciones(df_assign)
-
-            df_assign["Año"] = df_assign["Fecha"].dt.year
-            df_assign["Mes"] = df_assign["Fecha"].dt.month
-
-            resumen_mensual = df_assign.groupby(
-                ["ID_Enfermera", "Unidad", "Turno", "Jornada", "Año", "Mes"],
-                as_index=False
-            ).agg({
-                "Horas_Acumuladas": "sum",
-                "Fecha": "count"
-            }).rename(columns={
-                "ID_Enfermera": "ID",
-                "Fecha": "Jornadas_Asignadas",
-                "Horas_Acumuladas": "Horas_Asignadas"
-            })
-
-            guardar_resumen_mensual(resumen_mensual)
-            subir_bd_a_drive(FILE_ID)
-
-            # Para exportación, mostrar la fecha como string sin alterar el original
-            df_vista = df_assign.copy()
-            df_vista["Fecha"] = df_vista["Fecha"].dt.strftime("%d/%m/%Y")
-
-            # Guardar en sesión para mostrar y descargar
-            st.session_state["df_assign"] = df_vista
-            st.session_state["resumen_mensual"] = resumen_mensual
-            st.session_state["estado"] = "aprobado"
-
-            # Mostrar mensaje sin reiniciar
-            st.success("✅ Asignación aprobada. Puedes descargar los archivos.")
+            st.session_state["aprobacion_confirmada"] = True
+            
+            if st.session_state.get("aprobacion_confirmada"):
+                # Obtener asignación original
+                df_assign = st.session_state["df_assign"].copy()
+    
+                # Convertir fecha en formato real para resumen
+                df_assign["Fecha"] = pd.to_datetime(df_assign["Fecha"], dayfirst=True, errors='coerce')
+                if df_assign["Fecha"].isna().any():
+                    st.error("❌ Error: Algunas fechas no se pudieron interpretar correctamente. No se puede generar el resumen.")
+                    st.stop()
+    
+                # Generar resumen
+                guardar_asignaciones(df_assign)
+    
+                df_assign["Año"] = df_assign["Fecha"].dt.year
+                df_assign["Mes"] = df_assign["Fecha"].dt.month
+    
+                resumen_mensual = df_assign.groupby(
+                    ["ID_Enfermera", "Unidad", "Turno", "Jornada", "Año", "Mes"],
+                    as_index=False
+                ).agg({
+                    "Horas_Acumuladas": "sum",
+                    "Fecha": "count"
+                }).rename(columns={
+                    "ID_Enfermera": "ID",
+                    "Fecha": "Jornadas_Asignadas",
+                    "Horas_Acumuladas": "Horas_Asignadas"
+                })
+    
+                guardar_resumen_mensual(resumen_mensual)
+                subir_bd_a_drive(FILE_ID)
+    
+                # Para exportación, mostrar la fecha como string sin alterar el original
+                df_vista = df_assign.copy()
+                df_vista["Fecha"] = df_vista["Fecha"].dt.strftime("%d/%m/%Y")
+    
+                # Guardar en sesión para mostrar y descargar
+                st.session_state["df_assign"] = df_vista
+                st.session_state["resumen_mensual"] = resumen_mensual
+                st.session_state["estado"] = "aprobado"
+                st.session_state["aprobacion_confirmada"] = False  # Desactiva el flag
+    
+                # Mostrar mensaje sin reiniciar
+                st.success("✅ Asignación aprobada. Puedes descargar los archivos.")
 
         elif col2.button("🔁 Volver a generar asignación"):
             del st.session_state["df_assign"]
