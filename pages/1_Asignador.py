@@ -103,6 +103,9 @@ if metodo == "Desde Excel":
         demand.columns = demand.columns.str.strip()
         st.success("✅ Demanda cargada desde Excel")
         st.dataframe(demand)
+        # ✅ Añadir esta línea:
+        st.session_state["demand"] = demand
+        st.session_state["estado"] = "demanda_generada"
     else:
         st.info("🛈 Por favor, seleccione un archivo Excel con la demanda.")
             
