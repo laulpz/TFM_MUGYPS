@@ -138,12 +138,17 @@ elif metodo == "Generar manualmente":
     st.session_state['demand'] = demand
     st.session_state['estado'] = 'demanda_generada'
 
-# --- Sección de asignación ---
-if st.session_state.get('estado') == 'demanda_generada':
-    if st.button("🚀 Ejecutar asignación"):
+
+# --- Asignación de turnos (modo simulado aleatorio) ---
+if st.session_state.get("estado") == "demanda_generada" and "demand" in st.session_state and "staff" in st.session_state:
+    st.subheader("🔄 Asignar turnos automáticamente")
+
+    if st.button("🧠 Ejecutar asignación"):
         demand = st.session_state["demand"].copy()
+        staff = st.session_state["staff"].copy()
         staff_ids = staff.ID.tolist()
         asignaciones = []
+
         for _, fila in demand.iterrows():
             fecha, unidad, turno, requerido = fila["Fecha"], fila["Unidad"], fila["Turno"], fila["Personal_Requerido"]
             asignados = staff.sample(n=min(requerido, len(staff)), replace=False)
@@ -164,7 +169,7 @@ if st.session_state.get('estado') == 'demanda_generada':
         st.rerun()
 
 # --- Visualización y aprobación ---
-if st.session_state.get("estado") == "asignado":
+if st.session_state.get("estado") == "asignado" and "df_assign" in st.session_state:
     st.subheader("📝 Asignación sugerida")
     st.dataframe(st.session_state["df_assign"])
 
@@ -208,12 +213,13 @@ if st.session_state.get("estado") == "asignado":
                 st.error(f"❌ Error durante aprobación: {e}")
 
     if col2.button("🔁 Volver a generar asignación"):
-        del st.session_state["df_assign"]
+        if "df_assign" in st.session_state:
+            del st.session_state["df_assign"]
         st.session_state["estado"] = "demanda_generada"
         st.rerun()
 
 # --- Descarga final ---
-if st.session_state.get("estado") == "aprobado":
+if st.session_state.get("estado") == "aprobado" and "df_assign" in st.session_state and "resumen_mensual" in st.session_state:
     st.subheader("📄 Asignación final")
     st.dataframe(st.session_state["df_assign"])
 
@@ -231,9 +237,3 @@ if st.session_state.get("estado") == "aprobado":
         data=to_excel_bytes(st.session_state["resumen_mensual"]),
         file_name="Resumen_Mensual.xlsx"
     )
-
-
-
-
-
-
