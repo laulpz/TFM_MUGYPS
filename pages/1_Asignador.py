@@ -99,10 +99,10 @@ if metodo == "Desde Excel":
     st.subheader("📂 Subir archivo de demanda desde Excel")
     file_demand = st.file_uploader("Demanda de turnos (.xlsx)", type=["xlsx"], key="file_demand_excel")
     if file_demand:
-         demand = pd.read_excel(file_demand)
+        demand = pd.read_excel(file_demand)
         demand.columns = demand.columns.str.strip()
-          st.success("✅ Demanda cargada desde Excel")
-          st.dataframe(demand)
+        st.success("✅ Demanda cargada desde Excel")
+        st.dataframe(demand)
      else:
            st.info("🛈 Por favor, seleccione un archivo Excel con la demanda.")
             
