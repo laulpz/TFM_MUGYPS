@@ -154,7 +154,6 @@ if st.session_state.get("estado") == "demanda_generada":
                 asignaciones.append({
                     "Fecha": fecha,
                     "ID_Enfermera": enfermera["ID"],
-                    "Nombre": enfermera["Nombre"],
                     "Unidad": unidad,
                     "Turno": turno,
                     "Jornada": enfermera["Jornada"],
