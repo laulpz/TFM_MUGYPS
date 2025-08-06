@@ -78,6 +78,10 @@ staff = pd.read_excel(file_staff)
 staff.columns = staff.columns.str.strip()
 staff["Fechas_No_Disponibilidad"] = staff["Fechas_No_Disponibilidad"].apply(parse_dates)
 
+if plantilla_subida:
+    staff = pd.read_excel(plantilla_subida)
+    st.session_state["staff"] = staff  # ✅ IMPORTANTE
+
 # --- Cálculo de horas y jornadas permitidas ---
 staff_max_hours = {
     row.ID: BASE_MAX_HOURS[row.Turno_Contrato] * (0.8 if row.Jornada == "Parcial" else 1)
@@ -139,9 +143,17 @@ elif metodo == "Generar manualmente":
     st.session_state['estado'] = 'demanda_generada'
 
 
+if file_demand:
+    demand = pd.read_excel(file_demand)
+    st.session_state["demand"] = demand  # ✅ IMPORTANTE
+    st.session_state["estado"] = "demanda_generada"  # ✅ Habilita ejecución
+
 # --- Asignación de turnos (modo simulado aleatorio) ---
 if st.session_state.get("estado") == "demanda_generada" and "demand" in st.session_state and "staff" in st.session_state:
     st.subheader("🔄 Asignar turnos automáticamente")
+    st.sidebar.markdown(f"🧠 Estado actual: `{st.session_state.get('estado')}`")
+    st.sidebar.markdown(f"📦 Claves en session_state: `{list(st.session_state.keys())}`")
+
 
     if st.button("🧠 Ejecutar asignación"):
         demand = st.session_state["demand"].copy()
