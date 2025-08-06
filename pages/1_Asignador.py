@@ -139,23 +139,29 @@ elif metodo == "Generar manualmente":
     st.session_state['demand'] = demand
     st.session_state['estado'] = 'demanda_generada'
 
+
+
 # --- Asignación de turnos (modo simulado aleatorio) ---
 if st.session_state.get("estado") == "demanda_generada" and "demand" in st.session_state and "staff" in st.session_state:
     st.subheader("🔄 Asignar turnos automáticamente")
-    st.sidebar.markdown(f"🧠 Estado actual: `{st.session_state.get('estado')}`")
-    st.sidebar.markdown(f"📦 Claves en session_state: `{list(st.session_state.keys())}`")
-
 
     if st.button("🧠 Ejecutar asignación"):
         demand = st.session_state["demand"].copy()
         staff = st.session_state["staff"].copy()
         asignaciones = []
-        st.write("👀 Demand preview:", demand.head())
-        st.write("📦 Columnas de demand:", list(demand.columns))
-
 
         for _, fila in demand.iterrows():
-            fecha, unidad, turno, requerido = fila["Fecha"], fila["Unidad"], fila["Turno"], fila["Personal_Requerido"]
+            fecha = fila["Fecha"]
+            unidad = fila["Unidad"]
+            turno = fila["Turno"]
+            requerido = int(fila["Personal_Requerido"])
+            if requerido <= 0:
+                continue
+
+            if len(staff) == 0:
+                st.error("❌ No hay personal disponible en la plantilla.")
+                st.stop()
+
             asignados = staff.sample(n=min(requerido, len(staff)), replace=False)
 
             for _, enfermera in asignados.iterrows():
@@ -169,12 +175,17 @@ if st.session_state.get("estado") == "demanda_generada" and "demand" in st.sessi
                 })
 
         df_asignacion = pd.DataFrame(asignaciones)
+        if df_asignacion.empty:
+            st.error("❌ No se pudieron generar asignaciones. Verifica los datos de plantilla y demanda.")
+            st.stop()
+
+        
         st.session_state["df_assign"] = df_asignacion
         st.session_state["estado"] = "asignado"
         st.rerun()
 
 # --- Visualización y aprobación ---
-if st.session_state.get("estado") == "asignado":
+if st.session_state.get("estado") == "asignado" and "df_assign" in st.session_state:
     st.subheader("📝 Asignación sugerida")
     st.dataframe(st.session_state["df_assign"])
 
