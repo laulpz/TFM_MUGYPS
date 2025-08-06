@@ -154,6 +154,9 @@ if st.session_state.get("estado") == "demanda_generada" and "demand" in st.sessi
 
 
         for _, fila in demand.iterrows():
+            if demand.empty:
+                st.error("❌ La demanda está vacía. Revisa el origen.")
+                st.stop()
             try:
                 fecha = fila["Fecha"]
                 unidad = fila["Unidad"]
@@ -190,10 +193,13 @@ if st.session_state.get("estado") == "demanda_generada" and "demand" in st.sessi
         
         st.session_state["df_assign"] = df_asignacion
         st.session_state["estado"] = "asignado"
-        st.rerun()
+        #st.rerun()
 
 # --- Visualización y aprobación ---
 if st.session_state.get("estado") == "asignado" and "df_assign" in st.session_state:
+    st.write("✅ Estado actual:", st.session_state.get("estado"))
+    st.write("📋 df_assign:", st.session_state.get("df_assign").head())
+
     st.subheader("📝 Asignación sugerida")
     st.dataframe(st.session_state["df_assign"])
 
