@@ -240,9 +240,6 @@ if st.session_state.get("estado") == "asignado":
     col1, col2 = st.columns(2)
 
     if col1.button("✅ Aprobar asignación"):
-        st.session_state["aprobacion_confirmada"] = True
-
-    if st.session_state.get("aprobacion_confirmada"):
         with st.spinner("Guardando y subiendo asignación..."):
             try:
                 df_assign = st.session_state["df_assign"].copy()
@@ -250,12 +247,12 @@ if st.session_state.get("estado") == "asignado":
                 if df_assign["Fecha"].isna().any():
                     st.error("❌ Error: Algunas fechas no se pudieron interpretar correctamente. No se puede generar el resumen.")
                     st.stop()
-
+    
                 guardar_asignaciones(df_assign)
-
+    
                 df_assign["Año"] = df_assign["Fecha"].dt.year
                 df_assign["Mes"] = df_assign["Fecha"].dt.month
-
+    
                 resumen_mensual = df_assign.groupby(
                     ["ID_Enfermera", "Unidad", "Turno", "Jornada", "Año", "Mes"],
                     as_index=False
@@ -267,30 +264,29 @@ if st.session_state.get("estado") == "asignado":
                     "Fecha": "Jornadas_Asignadas",
                     "Horas_Acumuladas": "Horas_Asignadas"
                 })
-
+    
                 guardar_resumen_mensual(resumen_mensual)
                 subir_bd_a_drive(FILE_ID)
-
+    
                 df_vista = df_assign.copy()
                 df_vista["Fecha"] = df_vista["Fecha"].dt.strftime("%d/%m/%Y")
-
+    
                 st.session_state["df_assign"] = df_vista
                 st.session_state["resumen_mensual"] = resumen_mensual
                 st.session_state["estado"] = "aprobado"
-                st.session_state["aprobacion_confirmada"] = False
+    
                 st.success("✅ Asignación aprobada y base de datos actualizada.")
-                time.sleep(1)
-                st.rerun()  # 🔄 Fuerza recarga para mostrar botones de descarga
-
-
-
+                st.rerun()
+    
             except Exception as e:
                 st.error(f"❌ Error al guardar: {e}")
                 st.stop()
+    
 
     if col2.button("🔁 Volver a generar asignación"):
         del st.session_state["df_assign"]
         st.session_state["estado"] = "inicial"
+        st.rerun()
 
 # --- Sección final: descarga tras aprobación ---
 if st.session_state.get("estado") == "aprobado":
