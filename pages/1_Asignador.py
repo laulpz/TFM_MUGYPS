@@ -142,9 +142,6 @@ elif metodo == "Generar manualmente":
 st.session_state["demand"] = demand  # ✅ IMPORTANTE
 st.session_state["estado"] = "demanda_generada"  # ✅ Habilita ejecución
 
-if file_demand:
-    demand = pd.read_excel(file_demand)
-
 
 # --- Asignación de turnos (modo simulado aleatorio) ---
 if st.session_state.get("estado") == "demanda_generada" and "demand" in st.session_state and "staff" in st.session_state:
