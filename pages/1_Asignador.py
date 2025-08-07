@@ -233,8 +233,8 @@ if st.session_state.get("estado") == "asignado" and "df_assign" in st.session_st
                 subir_bd_a_drive(FILE_ID)
 
                 #df_assign["Fecha"] = df_assign["Fecha"].dt.strftime("%d/%m/%Y")
-                #st.session_state["df_assign"] = df_assign
-                st.session_state["df_assign"] = df_assign.copy()
+                st.session_state["df_assign"] = df_assign
+                #st.session_state["df_assign"] = df_assign.copy()
 
                 st.session_state["resumen_mensual"] = resumen
                 st.session_state["estado"] = "aprobado"
@@ -249,7 +249,7 @@ if st.session_state.get("estado") == "asignado" and "df_assign" in st.session_st
         if "df_assign" in st.session_state:
             del st.session_state["df_assign"]
         st.session_state["estado"] = "demanda_generada"
-        st.rerun()
+        #st.rerun()
 
 # --- Descarga final ---
 if st.session_state.get("estado") == "aprobado" and "df_assign" in st.session_state and "resumen_mensual" in st.session_state:
@@ -269,7 +269,8 @@ if st.session_state.get("estado") == "aprobado" and "df_assign" in st.session_st
 
     st.download_button(
         "⬇️ Descargar planilla asignada",
-        data=to_excel_bytes(st.session_state["df_final"]),
+        data=to_excel_bytes(df_final),
+        #data=to_excel_bytes(st.session_state["df_final"]),
         file_name="Planilla_Asignada.xlsx"
     )
 
