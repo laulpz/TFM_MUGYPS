@@ -17,7 +17,7 @@ st.title("📋 Asignador de Turnos de Enfermería")
 
 # --- Parámetros ---
 SHIFT_HOURS = {"Mañana": 7.5, "Tarde": 7.5, "Noche": 10}
-DIAS_SEMANA = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"]
+dias_semana = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"]
 TURNOS = ["Mañana", "Tarde", "Noche"]
 FILE_ID = "1zqAyIB1BLfCc2uH1v29r-clARHoh2o_s"  # ID de tu archivo en Drive
 
