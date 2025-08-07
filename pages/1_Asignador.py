@@ -97,6 +97,7 @@ if st.session_state.estado == "cargado":
                 for fecha in fechas for turno in turnos
             ]
             demand = pd.DataFrame(demanda)
+            st.session_state.demanda = demanda
 
 
 # --- Asignación de turnos ---
