@@ -230,7 +230,6 @@ if st.session_state.get("estado") == "asignado" and "df_assign" in st.session_st
                     st.error("❌ Fechas inválidas en la asignación.")
                     st.stop()
 
-
             guardar_asignaciones(df_assign)
             resumen = generar_resumen(df_assign)  # Función separada para claridad
             guardar_resumen_mensual(resumen)
@@ -240,14 +239,15 @@ if st.session_state.get("estado") == "asignado" and "df_assign" in st.session_st
             #df_assign["Fecha"] = df_assign["Fecha"].dt.strftime("%d/%m/%Y")
             #st.session_state["df_assign"] = df_assign
             #st.session_state["df_assign"] = df_assign.copy()
-            st.session_state["resumen_mensual"] = resumen
             st.session_state["estado"] = "aprobado"
+            st.session_state["resumen_mensual"] = resumen
             st.success("✅ Asignación aprobada y datos guardados.")
             st.write("🧭 Estado actual:", st.session_state.get("estado"))
+            st.rerun()
 
         except Exception as e:
             st.error(f"❌ Error durante aprobación: {e}")
-            st.stop()  # Detener ejecución si hay errores
+            #st.stop()  # Detener ejecución si hay errores
 
     if col2.button("🔁 Volver a generar asignación"):
         import time
@@ -259,31 +259,27 @@ if st.session_state.get("estado") == "asignado" and "df_assign" in st.session_st
 #if st.session_state.get("estado") == "aprobado" and "df_assign" in st.session_state and "resumen_mensual" in st.session_state:
 if st.session_state.get("estado") == "aprobado":
     st.subheader("📄 Asignación final")
+    # Asegurar que los datos existen
+    if "df_assign" not in st.session_state or "resumen_mensual" not in st.session_state:
+        st.error("❌ Datos no encontrados. Vuelve a generar la asignación.")
+        st.stop()
 
-    # ✅ Formateo solo para mostrar
-    df_final = st.session_state["df_assign"].copy()
-    #df_final["Fecha"] = pd.to_datetime(df_final["Fecha"], errors='coerce').dt.strftime("%d/%m/%Y")
-
-    #st.dataframe(df_final)
-    
-    #st.dataframe(st.session_state["df_assign"])
-    st.subheader("📊 Resumen mensual")
+    # Mostrar datos
+    st.dataframe(st.session_state["df_assign"])
     st.dataframe(st.session_state["resumen_mensual"])
 
-    st.download_button(
-        "⬇️ Descargar planilla asignada",
-        data=to_excel_bytes(df_final),
-        #data=to_excel_bytes(st.session_state["df_final"]),
-        #file_name="Planilla_Asignada.xlsx"
-        file_name=f"Asignacion_{datetime.now().strftime('%Y%m%d')}.xlsx"
-    )
+    # Botones de descarga
+    col1, col2 = st.columns(2)
+    with col1:
+        st.download_button(
+            "⬇️ Descargar asignación",
+            data=to_excel_bytes(st.session_state["df_assign"]),
+            file_name=f"Asignacion_{datetime.now().strftime('%Y%m%d')}.xlsx"
+        )
+    with col2:
+        st.download_button(
+            "⬇️ Descargar resumen",
+            data=to_excel_bytes(st.session_state["resumen_mensual"]),
+            file_name=f"Resumen_{datetime.now().strftime('%Y%m%d')}.xlsx"
+        )
 
-    st.download_button(
-        "⬇️ Descargar resumen mensual",
-        data=to_excel_bytes(st.session_state["resumen_mensual"]),
-        #file_name="Resumen_Mensual.xlsx"
-        file_name=f"Resumen_{datetime.now().strftime('%Y%m%d')}.xlsx"
-    )
-
-     #if uncovered:
-      
