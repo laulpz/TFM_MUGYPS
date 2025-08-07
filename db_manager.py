@@ -67,22 +67,59 @@ def guardar_horas(df):
     conn = sqlite3.connect(DB_PATH)
     df.to_sql("horas", conn, if_exists="replace", index=False)
     conn.close()
-
+"""
 def guardar_asignaciones(df):
     conn = sqlite3.connect(DB_PATH)
     df.to_sql("asignaciones", conn, if_exists="append", index=False)
     conn.close()
+"""
+
+def guardar_asignaciones(df):
+    """Guarda asignaciones con validación de columnas y transacción segura"""
+    required_columns = {"Fecha", "Unidad", "Turno", "ID_Enfermera", "Jornada", "Horas_Acumuladas"}
+    if not required_columns.issubset(df.columns):
+        raise ValueError(f"Faltan columnas requeridas: {required_columns - set(df.columns)}")
+    
+    conn = sqlite3.connect(DB_PATH)
+    try:
+        # Convertir fechas a formato ISO estandar
+        df["Fecha"] = pd.to_datetime(df["Fecha"]).dt.strftime("%Y-%m-%d")
+        df.to_sql("asignaciones", conn, if_exists="append", index=False)
+        conn.commit()  # ¡Importante!
+    except Exception as e:
+        conn.rollback()
+        raise e
+    finally:
+        conn.close()
 
 def cargar_asignaciones():
     conn = sqlite3.connect(DB_PATH)
     df = pd.read_sql_query("SELECT * FROM asignaciones", conn)
     conn.close()
     return df
-
+"""
 def guardar_resumen_mensual(df):
     conn = sqlite3.connect(DB_PATH)
     df.to_sql("resumen_mensual", conn, if_exists="append", index=False)
     conn.close()
+"""
+def guardar_resumen_mensual(df):
+    """Guarda resumen mensual con validación"""
+    required_columns = {"ID", "Unidad", "Turno", "Jornada", "Año", "Mes", "Jornadas_Asignadas", "Horas_Asignadas"}
+    if not required_columns.issubset(df.columns):
+        raise ValueError(f"Faltan columnas requeridas: {required_columns - set(df.columns)}")
+    
+    conn = sqlite3.connect(DB_PATH)
+    try:
+        df.to_sql("resumen_mensual", conn, if_exists="append", index=False)
+        conn.commit()
+    except Exception as e:
+        conn.rollback()
+        raise e
+    finally:
+        conn.close()
+
+
 
 def reset_db():
     conn = sqlite3.connect(DB_PATH)
