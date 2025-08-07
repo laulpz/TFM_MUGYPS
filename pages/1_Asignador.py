@@ -145,7 +145,7 @@ elif metodo == "Generar manualmente":
 if st.session_state.get("estado") == "demanda_generada" and "demand" in st.session_state and "staff" in st.session_state:
     st.subheader("🔄 Asignar turnos automáticamente")
 
-    if st.button("🧠 Ejecutar asignación"):
+    if st.button("⚙️ Ejecutar asignación"):
         demand = st.session_state["demand"].copy()
         staff = st.session_state["staff"].copy()
         asignaciones = []
@@ -279,3 +279,6 @@ if st.session_state.get("estado") == "aprobado" and "df_assign" in st.session_st
         data=to_excel_bytes(st.session_state["resumen_mensual"]),
         file_name="Resumen_Mensual.xlsx"
     )
+
+     #if uncovered:
+      
