@@ -236,14 +236,19 @@ if st.session_state.get("estado") == "asignado" and "df_assign" in st.session_st
             subir_bd_a_drive(FILE_ID)
 
             # Actualizar estado SIN rerun
-            #df_assign["Fecha"] = df_assign["Fecha"].dt.strftime("%d/%m/%Y")
-            #st.session_state["df_assign"] = df_assign
-            #st.session_state["df_assign"] = df_assign.copy()
-            st.session_state["estado"] = "aprobado"
-            st.session_state["resumen_mensual"] = resumen
+            st.session_state.update({
+                "estado": "aprobado",
+                "resumen_mensual": resumen,
+                "df_assign": df_assign
+            })
+
+            #st.session_state["estado"] = "aprobado"
+            #st.session_state["resumen_mensual"] = resumen
             st.success("✅ Asignación aprobada y datos guardados.")
             st.write("🧭 Estado actual:", st.session_state.get("estado"))
             #st.rerun()
+            st.balloons()  # Feedback visual
+            time.sleep(1)  # Pequeña pausa para asegurar la actualización
             st.experimental_rerun()  # Cambiar a experimental_rerun
 
         except Exception as e:
