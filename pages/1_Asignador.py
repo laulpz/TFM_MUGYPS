@@ -76,21 +76,28 @@ if st.session_state.estado == "cargado":
             st.session_state.demanda = demanda
     else:
         # Generación manual (simplificada)
+        unidad = st.selectbox("Unidad Hospitalaria", ["Medicina Interna", "UCI", "Urgencias", "Oncología", "Quirófano"])
         col1, col2 = st.columns(2)
-        fecha_inicio = col1.date_input("Fecha inicio", value=date.today())
-        fecha_fin = col2.date_input("Fecha fin", value=date.today() + timedelta(days=7))
+        fecha_inicio = col1.date_input("Fecha de inicio", value=date(2025, 1, 1))
+        fecha_fin = col2.date_input("Fecha de fin", value=date(2025, 1, 31))
         
         if fecha_fin > fecha_inicio:
-            demanda = []
-            for fecha in pd.date_range(fecha_inicio, fecha_fin):
-                dia_semana = DIAS_SEMANA[fecha.weekday()]
-                for turno in TURNOS:
-                    demanda.append({
-                        "Fecha": fecha.date(),
-                        "Turno": turno,
-                        "Personal_Requerido": st.number_input(f"{dia_semana} - {turno}", min_value=1, value=2)
-                    })
-            st.session_state.demanda = pd.DataFrame(demanda)
+            demanda_por_dia = {}
+            for dia in dias_semana:
+                st.markdown(f"**{dia}**")
+                cols = st.columns(3)
+                demanda_por_dia[dia] = {
+                    turno: cols[i].number_input(label=f"{turno}", min_value=0, max_value=20, value=3, key=f"{dia}_{turno}")
+                    for i, turno in enumerate(turnos)
+                }
+
+            fechas = [fecha_inicio + timedelta(days=i) for i in range((fecha_fin - fecha_inicio).days + 1)]
+            demanda = [
+                {"Fecha": fecha, "Unidad": unidad, "Turno": turno, "Personal_Requerido": demanda_por_dia[dias_semana[fecha.weekday()]][turno]}
+                for fecha in fechas for turno in turnos
+            ]
+            demand = pd.DataFrame(demanda)
+
 
 # --- Asignación de turnos ---
 if st.session_state.get("demanda") is not None:
