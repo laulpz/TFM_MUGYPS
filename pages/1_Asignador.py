@@ -63,7 +63,23 @@ def to_excel_bytes(df):
     with pd.ExcelWriter(output, engine="openpyxl", date_format="DD/MM/YYYY") as writer:
         df.to_excel(writer, index=False)
     return output.getvalue()
-        
+
+def generar_resumen(df):
+    df = df.copy()
+    df["Año"] = df["Fecha"].dt.year
+    df["Mes"] = df["Fecha"].dt.month
+
+    resumen = df.groupby(
+                ["ID_Enfermera", "Unidad", "Turno", "Jornada", "Año", "Mes"],
+                as_index=False
+            ).agg({
+                Horas_Asignadas=("Horas_Acumuladas", "sum"),
+                Jornadas_Asignadas=("Fecha", "count")
+            }).rename(columns={
+                 "ID_Enfermera": "ID",
+                 "Fecha": "Jornadas_Asignadas",
+                 "Horas_Acumuladas": "Horas_Asignadas"
+                })
 
 # Subida plantilla de personal
 st.subheader("📂  Suba la plantilla de personal")
@@ -205,65 +221,51 @@ if st.session_state.get("estado") == "asignado" and "df_assign" in st.session_st
 
     col1, col2 = st.columns(2)
     if col1.button("✅ Aprobar asignación"):
-        with st.spinner("Guardando y subiendo asignación..."):
-            try:
-                df_assign = st.session_state["df_assign"].copy()
-                df_assign["Fecha"] = pd.to_datetime(df_assign["Fecha"], dayfirst=True, errors='coerce')
-                if df_assign["Fecha"].isna().any():
+        try:
+            df_assign = st.session_state["df_assign"].copy()
+            df_assign["Fecha"] = pd.to_datetime(df_assign["Fecha"], format="%Y-%m-%d", errors="raise")
+            #df_assign["Fecha"] = pd.to_datetime(df_assign["Fecha"], dayfirst=True, errors='coerce')
+            if df_assign["Fecha"].isna().any():
                     st.error("❌ Fechas inválidas en la asignación.")
                     st.stop()
 
-                df_assign["Año"] = df_assign["Fecha"].dt.year
-                df_assign["Mes"] = df_assign["Fecha"].dt.month
 
-                resumen = df_assign.groupby(
-                    ["ID_Enfermera", "Unidad", "Turno", "Jornada", "Año", "Mes"],
-                    as_index=False
-                ).agg({
-                    "Horas_Acumuladas": "sum",
-                    "Fecha": "count"
-                }).rename(columns={
-                    "ID_Enfermera": "ID",
-                    "Fecha": "Jornadas_Asignadas",
-                    "Horas_Acumuladas": "Horas_Asignadas"
-                })
+            guardar_asignaciones(df_assign)
+            resumen = generar_resumen(df_assign)  # Función separada para claridad
+            guardar_resumen_mensual(resumen)
+            subir_bd_a_drive(FILE_ID)
 
-                guardar_asignaciones(df_assign)
-                guardar_resumen_mensual(resumen)
-                subir_bd_a_drive(FILE_ID)
+            # Actualizar estado SIN rerun
+            #df_assign["Fecha"] = df_assign["Fecha"].dt.strftime("%d/%m/%Y")
+            #st.session_state["df_assign"] = df_assign
+            #st.session_state["df_assign"] = df_assign.copy()
+            st.session_state["resumen_mensual"] = resumen
+            st.session_state["estado"] = "aprobado"
+            st.success("✅ Asignación aprobada y datos guardados.")
+            st.write("🧭 Estado actual:", st.session_state.get("estado"))
 
-                #df_assign["Fecha"] = df_assign["Fecha"].dt.strftime("%d/%m/%Y")
-                #st.session_state["df_assign"] = df_assign
-                st.session_state["df_assign"] = df_assign.copy()
-
-                st.session_state["resumen_mensual"] = resumen
-                st.session_state["estado"] = "aprobado"
-                st.success("✅ Asignación aprobada y datos guardados.")
-                st.write("🧭 Estado actual:", st.session_state.get("estado"))
-                #st.rerun()
-
-            except Exception as e:
-                st.error(f"❌ Error durante aprobación: {e}")
+        except Exception as e:
+            st.error(f"❌ Error durante aprobación: {e}")
+            st.stop()  # Detener ejecución si hay errores
 
     if col2.button("🔁 Volver a generar asignación"):
-        if "df_assign" in st.session_state:
-            del st.session_state["df_assign"]
+        import time
+        np.random.seed(int(time.time()))  # Nueva semilla cada vez
         st.session_state["estado"] = "demanda_generada"
-        st.rerun()
+        st.experimental_rerun()
 
 # --- Descarga final ---
-if st.session_state.get("estado") == "aprobado" and "df_assign" in st.session_state and "resumen_mensual" in st.session_state:
+#if st.session_state.get("estado") == "aprobado" and "df_assign" in st.session_state and "resumen_mensual" in st.session_state:
+if st.session_state.get("estado") == "aprobado":
     st.subheader("📄 Asignación final")
 
     # ✅ Formateo solo para mostrar
     df_final = st.session_state["df_assign"].copy()
-    df_final["Fecha"] = pd.to_datetime(df_final["Fecha"], errors='coerce').dt.strftime("%d/%m/%Y")
+    #df_final["Fecha"] = pd.to_datetime(df_final["Fecha"], errors='coerce').dt.strftime("%d/%m/%Y")
 
-    st.dataframe(df_final)
+    #st.dataframe(df_final)
     
     #st.dataframe(st.session_state["df_assign"])
-
-
     st.subheader("📊 Resumen mensual")
     st.dataframe(st.session_state["resumen_mensual"])
 
@@ -271,13 +273,15 @@ if st.session_state.get("estado") == "aprobado" and "df_assign" in st.session_st
         "⬇️ Descargar planilla asignada",
         data=to_excel_bytes(df_final),
         #data=to_excel_bytes(st.session_state["df_final"]),
-        file_name="Planilla_Asignada.xlsx"
+        #file_name="Planilla_Asignada.xlsx"
+        file_name=f"Asignacion_{datetime.now().strftime('%Y%m%d')}.xlsx"
     )
 
     st.download_button(
         "⬇️ Descargar resumen mensual",
         data=to_excel_bytes(st.session_state["resumen_mensual"]),
-        file_name="Resumen_Mensual.xlsx"
+        #file_name="Resumen_Mensual.xlsx"
+        file_name=f"Resumen_{datetime.now().strftime('%Y%m%d')}.xlsx"
     )
 
      #if uncovered:
