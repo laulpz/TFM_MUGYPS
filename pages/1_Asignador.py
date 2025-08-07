@@ -4,6 +4,7 @@ import pandas as pd
 import ast
 from datetime import datetime, timedelta, date
 from io import BytesIO
+import numpy as np
 from db_manager import (
     init_db, guardar_asignaciones, guardar_resumen_mensual,
     descargar_bd_desde_drive, subir_bd_a_drive, reset_db
@@ -68,18 +69,18 @@ def generar_resumen(df):
     df = df.copy()
     df["Año"] = df["Fecha"].dt.year
     df["Mes"] = df["Fecha"].dt.month
-
     resumen = df.groupby(
-                ["ID_Enfermera", "Unidad", "Turno", "Jornada", "Año", "Mes"],
-                as_index=False
-            ).agg({
-                Horas_Asignadas=("Horas_Acumuladas", "sum"),
-                Jornadas_Asignadas=("Fecha", "count")
-            }).rename(columns={
-                 "ID_Enfermera": "ID",
-                 "Fecha": "Jornadas_Asignadas",
-                 "Horas_Acumuladas": "Horas_Asignadas"
-                })
+        ["ID_Enfermera", "Unidad", "Turno", "Jornada", "Año", "Mes"],
+        as_index=False
+    ).agg(
+        Horas_Asignadas=("Horas_Acumuladas", "sum"),
+        Jornadas_Asignadas=("Fecha", "count")
+    ).rename(columns={
+        "ID_Enfermera": "ID",
+        "Fecha": "Jornadas_Asignadas",
+        "Horas_Acumuladas": "Horas_Asignadas"
+        })
+    return resumen
 
 # Subida plantilla de personal
 st.subheader("📂  Suba la plantilla de personal")
@@ -148,7 +149,7 @@ elif metodo == "Generar manualmente":
     
     fechas = [fecha_inicio + timedelta(days=i) for i in range((fecha_fin - fecha_inicio).days + 1)]
     demanda = [
-        {"Fecha": fecha.strftime("%Y-%m-%d"), "Unidad": unidad, "Turno": turno, "Personal_Requerido": demanda_por_dia[dias_semana[fecha.weekday()]][turno]}
+        {"Fecha": fecha, "Unidad": unidad, "Turno": turno, "Personal_Requerido": demanda_por_dia[dias_semana[fecha.weekday()]][turno]}
         for fecha in fechas for turno in turnos
     ]
     demand = pd.DataFrame(demanda)
