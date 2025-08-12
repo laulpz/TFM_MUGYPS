@@ -16,11 +16,6 @@ def generar_demanda_interactiva():
         "Medicina Interna", "UCI", "Urgencias", "Oncología", "Quirófano"
     ])
 
-    col1, col2 = st.columns(2)
-    fecha_inicio = col1.date_input("Fecha de inicio", value=date(2025, 1, 1))
-    fecha_fin = col2.date_input("Fecha de fin", value=date(2025, 1, 31))
-    fechas = [fecha_inicio + timedelta(days=i) for i in range((fecha_fin - fecha_inicio).days + 1)]
-
     dias_semana = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"]
     turnos = ["Mañana", "Tarde", "Noche"]
     
@@ -43,8 +38,12 @@ def generar_demanda_interactiva():
             )
 
     if st.button("📄 Generar demanda"):
-        start_date = datetime(2025, 8, 1)
-        fechas = [start_date + timedelta(days=i) for i in range(365)]
+        col1, col2 = st.columns(2)
+        fecha_inicio = col1.date_input("Fecha de inicio", value=date(2025, 1, 1))
+        fecha_fin = col2.date_input("Fecha de fin", value=date(2025, 1, 31))
+        fechas = [fecha_inicio + timedelta(days=i) for i in range((fecha_fin - fecha_inicio).days + 1)]
+        #start_date = datetime(2025, 8, 1)
+        #fechas = [start_date + timedelta(days=i) for i in range(365)]
 
         demanda = []
         for fecha in fechas:
