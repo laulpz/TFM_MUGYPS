@@ -12,10 +12,18 @@ from db_manager import (
 st.set_page_config(page_title="Asignador", layout="wide")
 st.title("📋 Asignador de Turnos (Excel o Generador Manual)")
 st.markdown("""
-1. Sube el archivo Excel de plantilla de personal.
-1. Introduce la demanda semanal por turnos.
-2. Elige el rango de fechas.
-4. Ejecuta la asignación. """)
+    Instrucciones:
+    1. Sube el archivo Excel de plantilla de personal (.xlsx) con las columnas:
+       - `ID` (código de empleado)
+       - `Unidad_Asignada`
+       - `Jornada` (`Completa`/`Parcial`)
+       - `Turno_Contrato` (`Mañana`, `Tarde` o `Noche`)
+       - `Fechas_No_Disponibilidad` (lista `YYYY-MM-DD` separadas por comas)
+    2. Crea la demanda de turnos en el rango de fechas de interés de una de las siguientes formas:
+        - Suba la demanda de turnos** (`.xlsx`) con las columnas `Fecha`, `Unidad`, `Turno` (`Mañana`/`Tarde`/`Noche`), `Personal_Requerido`
+        - Genere la demanda desde la propia aplicación de manera manual
+    3. Ejecuta la asignación. 
+    """)
 
 #Carga BBDD, debería cargarse desde estado anterior
 FILE_ID = "1zqAyIB1BLfCc2uH1v29r-clARHoh2o_s"
