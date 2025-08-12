@@ -5,12 +5,11 @@ from datetime import datetime, timedelta
 
 def generar_demanda_interactiva():
     st.markdown("""
-    ### 🗓️ Generador interactivo de demanda de turnos
-    Este módulo permite crear automáticamente la demanda de turnos para una unidad durante todo un año.
+    Este módulo permite crear automáticamente la demanda de turnos para una unidad durante el rango de fechas seleccionado por el usuario.
     
     1. Selecciona la unidad que quieres planificar.
     2. Define cuántas enfermeras necesitas por turno para cada día de la semana.
-    3. Descarga el Excel con los 365 días del año para usarlo en la asignación.
+    3. Descarga el Excel con los 365 días del año para usarlo en la asignación (Pestaña Asignador) o para guardar y analizar ese archivo.
     """)
 
     unidad_seleccionada = st.selectbox("Selecciona la unidad hospitalaria", [
@@ -32,8 +31,8 @@ def generar_demanda_interactiva():
                 label=f"{turno}", min_value=0, max_value=20, value=3, key=f"{dia}_{turno}"
             )
 
-    if st.button("📄 Generar demanda para 2025"):
-        start_date = datetime(2025, 1, 1)
+    if st.button("📄 Generar demanda"):
+        start_date = datetime(2025, 8, 1)
         fechas = [start_date + timedelta(days=i) for i in range(365)]
 
         demanda = []
@@ -61,6 +60,6 @@ def generar_demanda_interactiva():
         st.download_button(
             label="⬇️ Descargar Excel de demanda",
             data=to_excel_bytes(df_demanda),
-            file_name=f"Demanda_{unidad_seleccionada}_2025.xlsx",
+            file_name=f"Demanda_{unidad_seleccionada}.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         )
