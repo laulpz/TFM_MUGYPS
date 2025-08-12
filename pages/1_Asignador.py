@@ -124,9 +124,9 @@ if file_staff is not None and st.button("3️⃣🚀 Ejecutar asignación"):
         for _, row in staff.iterrows()
     }
 
-    st.markdown("""👩‍⚕️ Personal cargado""")
-    #st.subheader("👩‍⚕️ Personal cargado")
-    #st.dataframe(staff)
+    #st.markdown("""👩‍⚕️ Personal cargado""")
+    st.subheader("👩‍⚕️ Personal cargado")
+    st.dataframe(staff)
 
     #Aquí está obviando las horas anteriores. En código 31/07 algo así: 
     #df_prev = cargar_horas()
@@ -248,7 +248,7 @@ if st.session_state["asignacion_completada"]:
     df_assign = st.session_state["df_assign"].drop(columns=["Confirmado"], errors="ignore")
     uncovered = st.session_state.get("uncovered", [])
     st.success("✅ Asignación completada")ç
-     st.markdown("""🔍Turnos asignados""")
+    st.markdown("""🔍Turnos asignados""")
     st.dataframe(df_assign)
     
     if uncovered:
