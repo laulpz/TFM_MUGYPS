@@ -247,7 +247,7 @@ if file_staff is not None and st.button("3️⃣🚀 Ejecutar asignación"):
 if st.session_state["asignacion_completada"]:
     df_assign = st.session_state["df_assign"].drop(columns=["Confirmado"], errors="ignore")
     uncovered = st.session_state.get("uncovered", [])
-    st.success("✅ Asignación completada")ç
+    st.success("✅ Asignación completada")
     st.markdown("""🔍Turnos asignados""")
     st.dataframe(df_assign)
     
