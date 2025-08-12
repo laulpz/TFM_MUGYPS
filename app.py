@@ -43,6 +43,6 @@ imagen_path = "images/Imagen_Bienvenida.png"
 st.image(
     imagen_path,
     #caption="Título descriptivo de la imagen",  # Opcional
-    width=400,  # Ancho en píxeles (ajustable)
-    use_column_width=True  # Otra opción para ajuste automático
+    width=300,  # Ancho en píxeles (ajustable)
+    use_container_width=True  # Otra opción para ajuste automático
 )
