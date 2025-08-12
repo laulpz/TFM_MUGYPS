@@ -25,12 +25,12 @@ st.markdown("""
     3. Ejecuta la asignación. 
     """)
 
-#Carga BBDD, debería cargarse desde estado anterior
+#Carga BBDD
 FILE_ID = "1zqAyIB1BLfCc2uH1v29r-clARHoh2o_s"
 descargar_bd_desde_drive(FILE_ID)
 init_db()
 
-#31/07: Comprobar estado para conservar el de la sesión anterior.
+#Comprobar estado para conservar el de la sesión anterior.
 if "asignacion_completada" not in st.session_state:
     st.session_state.update({
         "asignacion_completada": False,
@@ -39,7 +39,6 @@ if "asignacion_completada" not in st.session_state:
         "df_uncov": None
     })
 
-#No sé si realmente es necesario
 if "file_staff" not in st.session_state:
     st.session_state["file_staff"] = None
 
@@ -57,7 +56,7 @@ if file_staff:
     st.session_state["file_staff"] = file_staff
     
 #Configurar la demanda de turnos
-st.sidebar.header("2️⃣📈 Selecciona el Método para ingresar demanda:")
+st.sidebar.header("2️⃣📈 Selecciona el Método para ingresar demanda (Generar Manualmente se muestra por defecto):")
 metodo = st.sidebar.selectbox("Selecciona una opción", ["Generar manualmente","Desde Excel"])
 demand = None
 if metodo == "Desde Excel":
@@ -125,7 +124,6 @@ if file_staff is not None and st.button("3️⃣🚀 Ejecutar asignación"):
     }
 
     st.markdown("""👩‍⚕️ Personal cargado""")
-    #st.subheader("👩‍⚕️ Personal cargado")
     st.dataframe(staff)
 
     #Aquí está obviando las horas anteriores. En código 31/07 algo así: 
@@ -212,7 +210,7 @@ if file_staff is not None and st.button("3️⃣🚀 Ejecutar asignación"):
                     "Turno": turno,
                     "ID_Enfermera": cand.ID,
                     "Jornada": cand.Jornada,
-                    "Horas": SHIFT_HOURS[turno], # staff_hours[cand.ID] + SHIFT_HOURS[turno]
+                    "Horas": SHIFT_HOURS[turno], 
                 })
                 staff_hours[cand.ID] += SHIFT_HOURS[turno]
                 staff_dates[cand.ID].append(fecha)
@@ -264,7 +262,6 @@ if st.session_state["asignacion_completada"]:
         # Debug: Mostrar estructura del DataFrame
         #st.write("Debug - df_assign columns:", st.session_state["df_assign"].columns)
         #st.write("Debug - df_assign dtypes:", st.session_state["df_assign"].dtypes)
-    
         # Verificar columnas requeridas (asegurando que los nombres coincidan exactamente)
         required_cols = ["Fecha", "Unidad", "Turno", "ID_Enfermera", "Jornada", "Horas"]
         if not all(col in st.session_state["df_assign"].columns for col in required_cols):
@@ -276,14 +273,13 @@ if st.session_state["asignacion_completada"]:
         df_to_save = st.session_state["df_assign"][["Fecha", "Unidad", "Turno", "ID_Enfermera", "Jornada", "Horas"]].copy()
         df_to_save["Fecha"] = pd.to_datetime(df_to_save["Fecha"]).dt.strftime("%Y-%m-%d")
 
-    
-        # Guardar
+        # Guardar con validación - debug
         try:
-            st.write("Columnas en df_to_save:", df_to_save.columns.tolist())
-            st.write("Primeras filas:", df_to_save.head())
+            #st.write("Columnas en df_to_save:", df_to_save.columns.tolist())
+            #st.write("Primeras filas:", df_to_save.head())
             guardar_asignaciones(df_to_save)
             guardar_resumen_mensual(st.session_state["resumen_mensual"])
-            st.success("✅ Datos guardados correctamente")
+            #st.success("✅ Datos guardados correctamente")
             subir_bd_a_drive(FILE_ID)
             st.success("📥 Datos guardados en la base de datos correctamente.")
         except Exception as e:
@@ -293,15 +289,12 @@ if st.session_state["asignacion_completada"]:
             st.error("No se encontró el resumen mensual")
             st.stop()
 
-        #st.subheader("🧾 Resumen Asignación Mensual por profesional")
-
         def to_excel_bytes(df):
             output = BytesIO()
             with pd.ExcelWriter(output, engine="openpyxl") as writer:
                 df.to_excel(writer, index=False)
             return output.getvalue()
 
-        #st.download_button("⬇️ Descargar planilla asignada", data=to_excel_bytes(st.session_state["df_assign"]), file_name="Planilla_Asignada.xlsx")
         st.download_button("⬇️ Descargar planilla asignada", data=to_excel_bytes(st.session_state["df_assign"].assign(Fecha=lambda x: pd.to_datetime(x['Fecha']).dt.strftime('%d/%m/%Y'))),file_name="Planilla_Asignada.xlsx")
         st.download_button("⬇️ Descargar resumen por profesional", data=to_excel_bytes(st.session_state["resumen_mensual"]), file_name=f"Resumen_{datetime.now().strftime('%Y%m%d')}.xlsx",mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 
