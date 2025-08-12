@@ -8,7 +8,13 @@ from db_manager import (
 )
 
 st.set_page_config(page_title="Inicio", page_icon="🏥", layout="wide", initial_sidebar_state="expanded")
-
+st.markdown("""
+<style>
+[data-testid="stSidebarNav"] {
+    display: none !important;
+}
+</style>
+""", unsafe_allow_html=True)
 
 # === CONFIGURA TU FILE_ID DE GOOGLE DRIVE AQUÍ ===
 FILE_ID = "1zqAyIB1BLfCc2uH1v29r-clARHoh2o_s"
