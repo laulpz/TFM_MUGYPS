@@ -16,35 +16,24 @@ st.set_page_config(  # ← Esto es imprescindible
     initial_sidebar_state="expanded"  # Sidebar visible
 )
 
-# CSS para eliminación completa y reemplazo perfecto
+# Solución minimalista:
+# 1. Ocultar el sidebar automático
 st.markdown("""
 <style>
-    /* Elimina el texto "app" original SIN dejar rastro */
-    [data-testid="stSidebarNav"] + div [data-testid="stVerticalBlock"] > div:first-child {
-        display: none !important;
-    }
-    
-    /* Contenedor del nuevo título con posicionamiento absoluto */
-    .custom-sidebar-title {
-        position: absolute;
-        top: 20px;
-        left: 20px;
-        font-size: 18px;
-        font-weight: 600;
-        color: inherit;
-        z-index: 1000002;
-        pointer-events: none;
-    }
-    
-    /* Ajuste del padding superior del sidebar */
-    [data-testid="stSidebarUserContent"] {
-        padding-top: 50px !important;
+    [data-testid="stSidebarNav"] {
+        display: none;
     }
 </style>
 """, unsafe_allow_html=True)
 
-# Añade tu título personalizado (perfectamente alineado)
-st.sidebar.markdown('<div class="custom-sidebar-title">📊 MUGYPS</div>', unsafe_allow_html=True)
+# 2. Crear sidebar personalizado desde cero
+with st.sidebar:
+    st.header("📊 MUGYPS")  # Tu título personalizado
+    # Aquí añades tus controles/widgets manualmente
+    # Ejemplo:
+    # st.selectbox("Menú", options=["Opción 1", "Opción 2"])
+    
+
 
 # === CONFIGURA TU FILE_ID DE GOOGLE DRIVE AQUÍ ===
 FILE_ID = "1zqAyIB1BLfCc2uH1v29r-clARHoh2o_s"
