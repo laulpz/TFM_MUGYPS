@@ -17,23 +17,28 @@ st.set_page_config(  # ← Esto es imprescindible
 )
 
 # 2. Eliminar el texto "app" del menú automático superior
+# 2. Solución definitiva para eliminar "app" (sin reemplazo)
 st.markdown("""
 <style>
-    /* Solución específica para el menú superior de navegación */
-    [data-testid="stSidebarUserContent"] > div:first-child > div:first-child > div:first-child {
-        display: none !important;
+    /* Elimina solo el texto "app" del menú superior */
+    [data-testid="stSidebarNav"] + div [data-testid="stVerticalBlock"] > div:first-child {
+        height: 0px !important;
+        visibility: hidden !important;
     }
     
-    /* Opcional: Añadir espacio superior si queda vacío */
+    /* Ajuste para evitar espacio vacío */
     [data-testid="stSidebarUserContent"] {
-        padding-top: 2rem;
+        padding-top: 0rem !important;
     }
 </style>
 """, unsafe_allow_html=True)
 
+# 3. Tu título personalizado (OPCIONAL - añádelo donde prefieras)
+st.sidebar.header("📊 MUGYPS")  # Esto aparecerá BAJO el menú de navegación
+
 # 3. Añadir tu propio título en la posición correcta
 st.sidebar.markdown("""
-<div style="margin-top: -50px; margin-bottom: 30px;">
+<div style="margin-top: -20px; margin-bottom: 20px;">
     <h1>📊 MUGYPS</h1>
 </div>
 """, unsafe_allow_html=True)
