@@ -9,7 +9,7 @@ def generar_demanda_interactiva():
     
     1. Selecciona la unidad que quieres planificar.
     2. Define cuántas enfermeras necesitas por turno para cada día de la semana.
-    3. Descarga el Excel con los 365 días del año para usarlo en la asignación (Pestaña Asignador) o para guardar y analizar ese archivo.
+    3. Descarga el Excel para usarlo en la herramienta o para guardar y analizar ese archivo posteriormente.
     """)
 
     unidad_seleccionada = st.selectbox("Selecciona la unidad hospitalaria", [
