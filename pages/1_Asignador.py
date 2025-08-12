@@ -69,7 +69,7 @@ if file_staff:
     
 #Configurar la demanda de turnos
 st.sidebar.header("2️⃣📈 Selecciona el Método para ingresar demanda:")
-metodo = st.sidebar.selectbox("Selecciona una opción. Generar desde la aplicación se muestra por defecto", ["Generar desde aplicación","Desde Excel"])
+metodo = st.sidebar.selectbox("Selecciona una opción. Generar desde la aplicación se muestra por defecto", ["Desde aplicación","Desde Excel"])
 demand = None
 if metodo == "Desde Excel":
     file_demand = st.sidebar.file_uploader("Demanda de turnos (.xlsx)", type=["xlsx"])
@@ -78,7 +78,7 @@ if metodo == "Desde Excel":
         demand.columns = demand.columns.str.strip()
         st.subheader("📆 Demanda desde archivo")
         st.dataframe(demand)
-elif metodo == "Generar manualmente":
+elif metodo == "Desde aplicación ":
     st.subheader("⚙️ Generador de Demanda")
     unidad = st.selectbox("Selecciona la Unidad Hospitalaria", ["Medicina Interna", "UCI", "Urgencias", "Oncología", "Quirófano"])
     col1, col2 = st.columns(2)
