@@ -57,10 +57,10 @@ ax.text(5, 1.5, 'Herramienta de análisis geoespacial', ha='center', va='center'
         fontsize=18, color='#9fbdd7', fontfamily='sans-serif')
 
 # Logo/icono
-ax.text(1, 3.2, '📊', ha='center', va='center', fontsize=36)
+#ax.text(1, 3.2, '📊', ha='center', va='center', fontsize=36)
 
 # Línea decorativa
-ax.plot([3, 7], [1.2, 1.2], color='#4dabdb', linewidth=3, alpha=0.7)
+ax.plot([3, 7], [1.2, 1.2], color='#990000', linewidth=3, alpha=0.7)
 
 # Guardar y mostrar
 plt.tight_layout()
