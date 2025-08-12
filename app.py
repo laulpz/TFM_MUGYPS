@@ -7,7 +7,9 @@ from db_manager import (
     cargar_asignaciones, descargar_bd_desde_drive, subir_bd_a_drive
 )
 
-st.set_page_config(page_title="Inicio", page_icon="🏥", layout="wide", initial_sidebar_state="expanded",)
+st.set_page_config(page_title="Inicio", page_icon="🏥", layout="wide", initial_sidebar_state="expanded")
+# Sobrescribe el título automático
+st.sidebar.markdown('# MUGYPS', unsafe_allow_html=True)
 
 # === CONFIGURA TU FILE_ID DE GOOGLE DRIVE AQUÍ ===
 FILE_ID = "1zqAyIB1BLfCc2uH1v29r-clARHoh2o_s"
