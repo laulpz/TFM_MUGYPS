@@ -60,7 +60,7 @@ if metodo == "Desde Excel":
         st.dataframe(demand)
 elif metodo == "Generar manualmente":
     st.subheader("⚙️ Generador de Demanda Manual")
-    unidad = st.selectbox("Unidad Hospitalaria", ["Medicina Interna", "UCI", "Urgencias", "Oncología", "Quirófano"])
+    unidad = st.selectbox("Selecciona la Unidad Hospitalaria", ["Medicina Interna", "UCI", "Urgencias", "Oncología", "Quirófano"])
     col1, col2 = st.columns(2)
     fecha_inicio = col1.date_input("Fecha de inicio", value=date(2025, 1, 1))
     fecha_fin = col2.date_input("Fecha de fin", value=date(2025, 1, 31))
