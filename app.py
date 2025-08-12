@@ -16,23 +16,27 @@ st.set_page_config(  # ← Esto es imprescindible
     initial_sidebar_state="expanded"  # Sidebar visible
 )
 
-st.sidebar.empty()
-st.sidebar.markdown("# 📊 MUGYPS")  # Usa markdown para mejor formato
+# 2. Eliminar el texto "app" del menú automático superior
 st.markdown("""
 <style>
-    /* Elimina el texto "app" inyectado por Streamlit */
-    [data-testid="stSidebarNavItems"]::before {
-        content: "" !important;
+    /* Solución específica para el menú superior de navegación */
+    [data-testid="stSidebarUserContent"] > div:first-child > div:first-child > div:first-child {
         display: none !important;
     }
     
-    /* Opcional: Ajusta el espaciado del título */
-    .sidebar .sidebar-content {
-        padding-top: 1.5rem;
+    /* Opcional: Añadir espacio superior si queda vacío */
+    [data-testid="stSidebarUserContent"] {
+        padding-top: 2rem;
     }
 </style>
 """, unsafe_allow_html=True)
 
+# 3. Añadir tu propio título en la posición correcta
+st.sidebar.markdown("""
+<div style="margin-top: -50px; margin-bottom: 30px;">
+    <h1>📊 MUGYPS</h1>
+</div>
+""", unsafe_allow_html=True)
 
 
 # === CONFIGURA TU FILE_ID DE GOOGLE DRIVE AQUÍ ===
