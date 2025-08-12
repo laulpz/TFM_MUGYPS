@@ -10,8 +10,8 @@ from db_manager import (
 
 
 st.set_page_config(  # ← Esto es imprescindible
-    page_title="MUGYPS",  # Título en la pestaña del navegador
-    page_icon="🧊",       # Icono
+    page_title="Inicio",  # Título en la pestaña del navegador
+    page_icon="🏥",       # Icono
     layout="wide",        # Diseño
     initial_sidebar_state="expanded"  # Sidebar visible
 )
