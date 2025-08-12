@@ -2,5 +2,6 @@
 menuItems = [
     {"name": "🏠 Inicio", "path": "/"},
     {"name": "📋 Asignador", "path": "/Asignador"},
-    {"name": "📊 Generador Demanda", "path": "/Generador_Demanda"},
+    {"name": "⚙️ Generador Demanda", "path": "/Generador_Demanda"},
+    {"name": "📊 Informes", "path": "/Informes"}
 ]
