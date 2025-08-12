@@ -258,9 +258,6 @@ if file_staff is not None and st.button("3️⃣🚀 Ejecutar asignación"):
 if st.session_state["asignacion_completada"]:
     df_assign = st.session_state["df_assign"].drop(columns=["Confirmado"], errors="ignore")
     uncovered = st.session_state.get("uncovered", [])
-    fecha_inicio_mod = fecha_inicio.strftime('%Y%m%d')
-    fecha_fin_mod = fecha_fin.strftime('%Y%m%d')
-    unidad_mod = unidad.replace(" ", "_")
     st.success("✅ Asignación completada")
     st.markdown("""🔍Turnos asignados""")
     st.dataframe(df_assign)
@@ -311,8 +308,8 @@ if st.session_state["asignacion_completada"]:
             st.error("No se encontró el resumen mensual")
             st.stop()
 
-        file_name_planilla = f"Turnos_Asignados_{unidad_mod}_{fecha_inicio_mod}_{fecha_fin_mod}.xlsx"
-        file_name_resumen = f"Resumen_{unidad_mod}_{fecha_inicio_mod}_{fecha_fin_mod}.xlsx"
+        file_name_planilla = f"Turnos_Asignados_{unidad.replace(" ", "_")}_{fecha_inicio.strftime('%Y%m%d')}_{fecha_fin.strftime('%Y%m%d')}.xlsx"
+        file_name_resumen = f"Resumen_{unidad.replace(" ", "_")}_{fecha_inicio.strftime('%Y%m%d')}_{fecha_fin.strftime('%Y%m%d')}.xlsx"
         st.download_button("⬇️ Descargar planilla asignada", data=to_excel_bytes(st.session_state["df_assign"].assign(Fecha=lambda x: pd.to_datetime(x['Fecha']).dt.strftime('%d/%m/%Y'))),file_name=file_name_planilla, mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
         st.download_button("⬇️ Descargar resumen por profesional", data=to_excel_bytes(st.session_state["resumen_mensual"]), file_name=file_name_resumen, mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 
