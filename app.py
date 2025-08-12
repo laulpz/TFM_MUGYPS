@@ -22,7 +22,7 @@ with st.sidebar:
     st.markdown("### Menú Principal")
     st.page_link("pages/1_📋Asignador.py", label="Asignación de Turnos", icon="📋")
     st.page_link("pages/2_🗓️ Generador de Demanda.py", label="Generador de demanda", icon="📋")
-    st.page_link("pages/3_📋 Asignador.py", label="Informes", icon="📋")
+    st.page_link("pages/3_📊 Informes.py", label="Informes", icon="📋")
     # Añade más páginas aquí
 
 st.title("🩺 Planificador de Turnos de Enfermería")
