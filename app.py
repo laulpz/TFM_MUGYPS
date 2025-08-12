@@ -12,6 +12,15 @@ st.set_page_config(page_title="Inicio", page_icon="🏥", layout="wide", initial
 # === CONFIGURA TU FILE_ID DE GOOGLE DRIVE AQUÍ ===
 FILE_ID = "1zqAyIB1BLfCc2uH1v29r-clARHoh2o_s"
 
+st.markdown("""
+<style>
+[data-testid="stSidebarNavItems"] {
+    gap: 0.5rem;
+    padding: 0.5rem !important;
+}
+</style>
+""", unsafe_allow_html=True)
+
 # Sincronizar base de datos
 descargar_bd_desde_drive(FILE_ID)
 init_db()
