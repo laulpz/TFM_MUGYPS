@@ -19,7 +19,8 @@ init_db()
 # Barra lateral personalizada
 with st.sidebar:
     st.title("Menú Principal🏥")
-    st.page_link("pages/1_📋Asignador.py", label="Asignación de Turnos", icon="📋")
+    st.markdown("### Menú Principal")
+    st.page_link("pages/1_📋 Asignador.py", label="Asignación de Turnos", icon="📋")
     # Añade más páginas aquí
 
 st.title("🩺 Planificador de Turnos de Enfermería")
