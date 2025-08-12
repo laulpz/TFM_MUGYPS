@@ -16,33 +16,35 @@ st.set_page_config(  # ← Esto es imprescindible
     initial_sidebar_state="expanded"  # Sidebar visible
 )
 
-# 2. Eliminar el texto "app" del menú automático superior
-# 2. Solución definitiva para eliminar "app" (sin reemplazo)
+# CSS para eliminación completa y reemplazo perfecto
 st.markdown("""
 <style>
-    /* Elimina solo el texto "app" del menú superior */
+    /* Elimina el texto "app" original SIN dejar rastro */
     [data-testid="stSidebarNav"] + div [data-testid="stVerticalBlock"] > div:first-child {
-        height: 0px !important;
-        visibility: hidden !important;
+        display: none !important;
     }
     
-    /* Ajuste para evitar espacio vacío */
+    /* Contenedor del nuevo título con posicionamiento absoluto */
+    .custom-sidebar-title {
+        position: absolute;
+        top: 20px;
+        left: 20px;
+        font-size: 18px;
+        font-weight: 600;
+        color: inherit;
+        z-index: 1000002;
+        pointer-events: none;
+    }
+    
+    /* Ajuste del padding superior del sidebar */
     [data-testid="stSidebarUserContent"] {
-        padding-top: 0rem !important;
+        padding-top: 50px !important;
     }
 </style>
 """, unsafe_allow_html=True)
 
-# 3. Tu título personalizado (OPCIONAL - añádelo donde prefieras)
-st.sidebar.header("📊 MUGYPS")  # Esto aparecerá BAJO el menú de navegación
-
-# 3. Añadir tu propio título en la posición correcta
-st.sidebar.markdown("""
-<div style="margin-top: -120px; margin-bottom: 100px;">
-    <h1>📊 MUGYPS</h1>
-</div>
-""", unsafe_allow_html=True)
-
+# Añade tu título personalizado (perfectamente alineado)
+st.sidebar.markdown('<div class="custom-sidebar-title">📊 MUGYPS</div>', unsafe_allow_html=True)
 
 # === CONFIGURA TU FILE_ID DE GOOGLE DRIVE AQUÍ ===
 FILE_ID = "1zqAyIB1BLfCc2uH1v29r-clARHoh2o_s"
