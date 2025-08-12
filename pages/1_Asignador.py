@@ -260,8 +260,8 @@ if st.session_state["asignacion_completada"]:
     
     if aprobacion == "Aprobar":
         # Debug: Mostrar estructura del DataFrame
-        st.write("Debug - df_assign columns:", st.session_state["df_assign"].columns)
-        st.write("Debug - df_assign dtypes:", st.session_state["df_assign"].dtypes)
+        #st.write("Debug - df_assign columns:", st.session_state["df_assign"].columns)
+        #st.write("Debug - df_assign dtypes:", st.session_state["df_assign"].dtypes)
     
         # Verificar columnas requeridas (asegurando que los nombres coincidan exactamente)
         required_cols = ["Fecha", "Unidad", "Turno", "ID_Enfermera", "Jornada", "Horas"]
