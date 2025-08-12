@@ -9,6 +9,8 @@ from db_manager import (
     cargar_asignaciones, descargar_bd_desde_drive, subir_bd_a_drive
 )
 
+st.set_page_config(page_title="Inicio", layout="wide")
+
 # === CONFIGURA TU FILE_ID DE GOOGLE DRIVE AQUÍ ===
 FILE_ID = "1zqAyIB1BLfCc2uH1v29r-clARHoh2o_s"
 
