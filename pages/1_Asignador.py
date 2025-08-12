@@ -24,7 +24,6 @@ def parse_dates(cell):
     except: return [d.strip() for d in str(cell).split(',')]
 
 
-
 #Inicialización de variables
 SHIFT_HOURS = {"Mañana": 7.5, "Tarde": 7.5, "Noche": 10}
 BASE_MAX_HOURS = {"Mañana": 1642.5, "Tarde": 1642.5, "Noche": 1470}
@@ -124,7 +123,6 @@ elif metodo == "Desde aplicación":
 if file_staff is not None and st.button("3️⃣🚀 Ejecutar asignación"):
     staff = pd.read_excel(file_staff)
     staff.columns = staff.columns.str.strip()
-
 
     staff["Fechas_No_Disponibilidad"] = staff["Fechas_No_Disponibilidad"].apply(parse_dates)
     
