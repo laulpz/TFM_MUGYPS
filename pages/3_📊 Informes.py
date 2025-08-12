@@ -18,7 +18,7 @@ def to_excel_bytes(df):
         df.to_excel(writer, index=False, sheet_name="Resumen")
     return output.getvalue()
 
-st.set_page_config(page_title="Resumen Histórico", layout="wide")
+#st.set_page_config(page_title="Resumen Histórico", layout="wide")
 st.title("📊 Visualizador de Turnos asignados")
 
 df = cargar_resumen_mensual()
