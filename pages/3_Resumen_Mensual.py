@@ -18,13 +18,13 @@ def to_excel_bytes(df):
         df.to_excel(writer, index=False, sheet_name="Resumen")
     return output.getvalue()
 
-st.set_page_config(page_title="Resumen Mensual – SERMAS", layout="wide")
-st.title("📊 Visualizador de Resumen Mensual por Profesional")
+st.set_page_config(page_title="Resumen Histórico", layout="wide")
+st.title("📊 Visualizador de Turnos asignados")
 
 df = cargar_resumen_mensual()
 
 if df.empty:
-    st.warning("⚠️ No hay datos registrados en la tabla resumen_mensual.")
+    st.warning("⚠️ Actualmente no hay datos registrados en la Base de Datos. Ejecuta la aplicación desde la pestaña Asignador y vuelve aquí. ")
     st.stop()
 
 df["Año"] = df["Año"].astype(int)
