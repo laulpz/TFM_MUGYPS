@@ -20,15 +20,8 @@ st.set_page_config(page_title="Herramienta de planificación de turnos", layout=
 st.title("🩺 Planificador de Turnos de Enfermería")
 
 st.markdown("""
-Este formulario permite planificar automáticamente los turnos de enfermería para un rango de fechas personalizado.
-1 Pestaña Asignador
+Este formulario permite planificar automáticamente los turnos de enfermería para un rango de fechas personalizado. Navega por cada una de las pestañas para aprender más sobre ellas.
+1. Pestaña Asignador
 2. Pestaña Generador de demanda
 3. Pestaña Visualización turnos
-
 """)
-
-# Guardar en Drive después de confirmación
-if st.session_state.get("asignacion_completada"):
-    if st.radio("¿Deseas guardar esta planificación en Drive?", ["No", "Sí"], index=0) == "Sí":
-        subir_bd_a_drive(FILE_ID)
-        st.success("📤 Base de datos subida a Google Drive.")
