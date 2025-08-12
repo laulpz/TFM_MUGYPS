@@ -51,13 +51,14 @@ dias_semana = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", 
 turnos = ["Mañana", "Tarde", "Noche"]
 
 #Subida plantilla de personal. 10/08 añadido if para st.session_state
-st.sidebar.header("1️⃣📂 Suba la plantilla de personal")
-file_staff = st.sidebar.file_uploader("El archivo debe contener las siguientes columnas: Plantilla de personal (.xlsx)", type=["xlsx"])
+st.sidebar.header("1️⃣📂 Sube la plantilla de personal")
+file_staff = st.sidebar.file_uploader("Plantilla de personal en formato .xlsx)", type=["xlsx"])
 if file_staff:
     st.session_state["file_staff"] = file_staff
     
 #Configurar la demanda de turnos
-metodo = st.sidebar.selectbox("2️⃣📈 Método para ingresar demanda:", ["Generar manualmente","Desde Excel"])
+st.sidebar.header("2️⃣📈 Selecciona el Método para ingresar demanda:")
+metodo = st.sidebar.selectbox("Selecciona una opción", ["Generar manualmente","Desde Excel"])
 demand = None
 if metodo == "Desde Excel":
     file_demand = st.sidebar.file_uploader("Demanda de turnos (.xlsx)", type=["xlsx"])
