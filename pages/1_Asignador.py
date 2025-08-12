@@ -18,6 +18,13 @@ def to_excel_bytes(df):
         df.to_excel(writer, index=False)
     return output.getvalue()
 
+def parse_dates(cell):
+    if pd.isna(cell): return []
+    try: return [d.strip() for d in ast.literal_eval(str(cell))]
+    except: return [d.strip() for d in str(cell).split(',')]
+
+
+
 #Inicialización de variables
 SHIFT_HOURS = {"Mañana": 7.5, "Tarde": 7.5, "Noche": 10}
 BASE_MAX_HOURS = {"Mañana": 1642.5, "Tarde": 1642.5, "Noche": 1470}
@@ -118,10 +125,6 @@ if file_staff is not None and st.button("3️⃣🚀 Ejecutar asignación"):
     staff = pd.read_excel(file_staff)
     staff.columns = staff.columns.str.strip()
 
-    def parse_dates(cell):
-        if pd.isna(cell): return []
-        try: return [d.strip() for d in ast.literal_eval(str(cell))]
-        except: return [d.strip() for d in str(cell).split(',')]
 
     staff["Fechas_No_Disponibilidad"] = staff["Fechas_No_Disponibilidad"].apply(parse_dates)
     
