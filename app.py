@@ -15,26 +15,24 @@ st.set_page_config(  # ← Esto es imprescindible
     layout="wide",        # Diseño
     initial_sidebar_state="expanded"  # Sidebar visible
 )
-# SOLUCIÓN DEFINITIVA - Reemplaza "app" manteniendo todo lo demás
+
+st.sidebar.empty()
+st.sidebar.markdown("# 📊 MUGYPS")  # Usa markdown para mejor formato
 st.markdown("""
 <style>
-    [data-testid="stSidebarUserContent"] > div:first-child > div:first-child > div:first-child {
-        visibility: hidden;
-        height: 0px;
+    /* Elimina el texto "app" inyectado por Streamlit */
+    [data-testid="stSidebarNavItems"]::before {
+        content: "" !important;
+        display: none !important;
     }
-    [data-testid="stSidebarUserContent"] > div:first-child > div:first-child > div:first-child:after {
-        content: "MUGYPS";
-        visibility: visible;
-        display: block;
-        height: auto;
-        font-size: 18px;
-        font-weight: bold;
-        margin-top: -20px;
+    
+    /* Opcional: Ajusta el espaciado del título */
+    .sidebar .sidebar-content {
+        padding-top: 1.5rem;
     }
 </style>
 """, unsafe_allow_html=True)
 
-st.sidebar.header("MUGYPS")
 
 
 # === CONFIGURA TU FILE_ID DE GOOGLE DRIVE AQUÍ ===
