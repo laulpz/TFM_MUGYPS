@@ -56,8 +56,8 @@ if file_staff:
     st.session_state["file_staff"] = file_staff
     
 #Configurar la demanda de turnos
-st.sidebar.header("2️⃣📈 Selecciona el Método para ingresar demanda (Generar Manualmente se muestra por defecto):")
-metodo = st.sidebar.selectbox("Selecciona una opción", ["Generar manualmente","Desde Excel"])
+st.sidebar.header("2️⃣📈 Selecciona el Método para ingresar demanda:")
+metodo = st.sidebar.selectbox("Selecciona una opción. Generar Manualmente se muestra por defecto", ["Generar manualmente","Desde Excel"])
 demand = None
 if metodo == "Desde Excel":
     file_demand = st.sidebar.file_uploader("Demanda de turnos (.xlsx)", type=["xlsx"])
