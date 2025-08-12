@@ -103,7 +103,7 @@ elif metodo == "Generar manualmente":
     demand = pd.DataFrame(demanda)
 
 #Ejecutar asignación
-if file_staff is not None and st.button("🚀 Ejecutar asignación"):
+if file_staff is not None and st.button("3️⃣🚀 Ejecutar asignación"):
     staff = pd.read_excel(file_staff)
     staff.columns = staff.columns.str.strip()
 
