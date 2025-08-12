@@ -16,25 +16,6 @@ st.set_page_config(  # ← Esto es imprescindible
     initial_sidebar_state="expanded"  # Sidebar visible
 )
 
-# Solución minimalista:
-# 1. Ocultar el sidebar automático
-st.markdown("""
-<style>
-    /* Oculta solo el texto */
-    [data-testid="stSidebarNav"] span {
-        display: none;
-    }
-</style>
-""", unsafe_allow_html=True)
-
-# 2. Crear sidebar personalizado desde cero
-with st.sidebar:
-    st.header("📊 MUGYPS")  # Tu título personalizado
-    # Aquí añades tus controles/widgets manualmente
-    # Ejemplo:
-    # st.selectbox("Menú", options=["Opción 1", "Opción 2"])
-    
-
 
 # === CONFIGURA TU FILE_ID DE GOOGLE DRIVE AQUÍ ===
 FILE_ID = "1zqAyIB1BLfCc2uH1v29r-clARHoh2o_s"
