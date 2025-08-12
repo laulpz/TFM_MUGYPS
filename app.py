@@ -46,7 +46,7 @@ ax.set_ylim(0, 4)
 ax.axis('off')
 
 # Elementos gráficos
-ax.add_patch(Rectangle((0.5, 0.5), 9, 3, fill=True, color='#1f77b4', alpha=0.2))  # Marco
+ax.add_patch(Rectangle((0.5, 0.5), 9, 3, fill=True, color='#990000', alpha=0.2))  # Marco
 
 # Texto principal
 ax.text(5, 2.5, 'MUGYPS', ha='center', va='center', 
