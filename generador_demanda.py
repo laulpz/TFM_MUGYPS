@@ -18,12 +18,7 @@ def generar_demanda_interactiva():
 
     dias_semana = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"]
     turnos = ["Mañana", "Tarde", "Noche"]
-    
-    #Aviso rango de fechas erróneo
-    if fecha_fin <= fecha_inicio:
-        st.warning("⚠️ La fecha fin debe ser posterior a la fecha inicio.")
-        st.stop()
-    
+
     st.markdown("### Configuración de turnos por día")
     demanda_por_dia = {}
 
@@ -45,6 +40,13 @@ def generar_demanda_interactiva():
         #start_date = datetime(2025, 8, 1)
         #fechas = [start_date + timedelta(days=i) for i in range(365)]
 
+            
+        #Aviso rango de fechas erróneo
+        if fecha_fin <= fecha_inicio:
+            st.warning("⚠️ La fecha fin debe ser posterior a la fecha inicio.")
+            st.stop()
+    
+        
         demanda = []
         for fecha in fechas:
             dia_castellano = dias_semana[fecha.weekday()]
