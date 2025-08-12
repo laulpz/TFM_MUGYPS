@@ -8,14 +8,7 @@ from db_manager import (
 )
 
 st.set_page_config(page_title="Inicio", page_icon="🏥", layout="wide", initial_sidebar_state="expanded")
-# Ocultar el menú automático de Streamlit
-hide_auto_menu = """
-<style>
-#MainMenu {visibility: hidden;}
-footer {visibility: hidden;}
-</style>
-"""
-st.markdown(hide_auto_menu, unsafe_allow_html=True)
+
 
 # === CONFIGURA TU FILE_ID DE GOOGLE DRIVE AQUÍ ===
 FILE_ID = "1zqAyIB1BLfCc2uH1v29r-clARHoh2o_s"
@@ -23,16 +16,6 @@ FILE_ID = "1zqAyIB1BLfCc2uH1v29r-clARHoh2o_s"
 # Sincronizar base de datos
 descargar_bd_desde_drive(FILE_ID)
 init_db()
-
-# Barra lateral personalizada
-with st.sidebar:
-    st.title("Menú Principal🏥")
-    st.markdown("### Menú Principal")
-    st.page_link("app.py", label="🏠 Inicio", icon="⭐")
-    st.page_link("pages/1_📋Asignador.py", label="Asignación de Turnos", icon="📋")
-    st.page_link("pages/2_🗓️ Generador de Demanda.py", label="Generador de demanda", icon="📋")
-    st.page_link("pages/3_📊 Informes.py", label="Informes", icon="📋")
-    # Añade más páginas aquí
 
 st.title("🩺 Planificador de Turnos de Enfermería")
 
