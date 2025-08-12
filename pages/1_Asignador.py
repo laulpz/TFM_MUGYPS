@@ -313,7 +313,7 @@ if st.session_state["asignacion_completada"]:
         file_name_planilla = f"Turnos_Asignados_{unidad_mod}_{fecha_inicio_mod}_{fecha_fin_mod}.xlsx"
         file_name_resumen = f"Resumen_{unidad_mod}_{fecha_inicio_mod}_{fecha_fin_mod}.xlsx"
         st.download_button("⬇️ Descargar planilla asignada", data=to_excel_bytes(st.session_state["df_assign"].assign(Fecha=lambda x: pd.to_datetime(x['Fecha']).dt.strftime('%d/%m/%Y'))),file_name=file_name_planilla, mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-        st.download_button("⬇️ Descargar resumen por profesional", data=to_excel_bytes(st.session_state["resumen_mensual"]), file_name=file_name_resumen", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+        st.download_button("⬇️ Descargar resumen por profesional", data=to_excel_bytes(st.session_state["resumen_mensual"]), file_name=file_name_resumen, mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 
     elif aprobacion == "Rehacer":
         st.session_state["asignacion_completada"] = False
