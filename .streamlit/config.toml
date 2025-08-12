@@ -1,6 +1,5 @@
 [server]
 menuItems = [
     {"name": "🏠 Inicio", "path": "/"},
-    {"name": "📋 Asignador", "path": "/Asignador"},
-    {"name": "📊 Informes", "path": "/Informes"}
+    {"name": "📋 Asignador", "path": "pages/1_📋Asignador.py"},
 ]
