@@ -312,12 +312,16 @@ if st.session_state["asignacion_completada"]:
    
         # Obtener unidad y fechas de la demanda
         if metodo == "Desde Excel":
-            # Extraer unidad (tomamos la primera que aparece)
-            unidad_descarga = demand['Unidad'].iloc[0].replace(" ", "_")
-            # Extraer rango de fechas
-            fechas_demand = pd.to_datetime(demand['Fecha'])
-            fecha_inicio_descarga = fechas_demand.min()
-            fecha_fin_descarga = fechas_demand.max()
+            if demand is not None and not demand.empty:
+                # Extraer unidad (tomamos la primera que aparece)
+                unidad_descarga = demand['Unidad'].iloc[0].replace(" ", "_")
+                # Extraer rango de fechas
+                fechas_demand = pd.to_datetime(demand['Fecha'])
+                fecha_inicio_descarga = fechas_demand.min()
+                fecha_fin_descarga = fechas_demand.max()
+            else:
+                st.error("⚠️No se ha cargado correctamente la demanda desde Excel")
+                st.stop()
         else:
             # Usar los valores de cuando se generó desde la aplicación
             unidad_descarga = unidad.replace(" ", "_")
