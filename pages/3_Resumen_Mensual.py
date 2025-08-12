@@ -24,7 +24,8 @@ st.title("📊 Visualizador de Turnos asignados")
 df = cargar_resumen_mensual()
 
 if df.empty:
-    st.warning("⚠️ Actualmente no hay datos registrados en la Base de Datos. Ejecuta la aplicación desde la pestaña Asignador y vuelve aquí. ")
+    #st.warning("⚠️ Actualmente no hay datos registrados en la Base de Datos. Ejecuta la aplicación desde la pestaña Asignador y vuelve aquí. ")
+    st.info("🛈 Actualmente no hay datos registrados en la Base de Datos. Ejecuta la aplicación desde la pestaña Asignador y vuelve aquí.")
     st.stop()
 
 df["Año"] = df["Año"].astype(int)
