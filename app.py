@@ -37,7 +37,7 @@ Esta herramienta permite planificar automáticamente los turnos de enfermería p
 from PIL import Image  # Opcional para procesamiento adicional
 
 # Ruta a tu imagen (puede ser local o URL)
-imagen_path = "C:\Users\mario\Downloads\Imagen_Bienvenida.png"
+imagen_path = "IMAGES/Imagen_Bienvenida.png"
 
 # Cargar y mostrar imagen
 st.image(
