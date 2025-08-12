@@ -20,7 +20,8 @@ st.set_page_config(  # ← Esto es imprescindible
 # 1. Ocultar el sidebar automático
 st.markdown("""
 <style>
-    [data-testid="stSidebarNav"] {
+    /* Oculta solo el texto */
+    [data-testid="stSidebarNav"] span {
         display: none;
     }
 </style>
