@@ -16,16 +16,15 @@ FILE_ID = "1zqAyIB1BLfCc2uH1v29r-clARHoh2o_s"
 descargar_bd_desde_drive(FILE_ID)
 init_db()
 
-st.set_page_config(page_title="Asignador único de Turnos – SERMAS", layout="wide")
-st.title("🩺 Planificador de Turnos de Enfermería (SERMAS)")
+st.set_page_config(page_title="Herramienta de planificación de turnos", layout="wide")
+st.title("🩺 Planificador de Turnos de Enfermería")
 
 st.markdown("""
 Este formulario permite planificar automáticamente los turnos de enfermería para un rango de fechas personalizado.
+1 Pestaña Asignador
+2. Pestaña Generador de demanda
+3. Pestaña Visualización turnos
 
-1. Introduce la demanda semanal por turnos.
-2. Elige el rango de fechas.
-3. Sube el archivo Excel de plantilla de personal.
-4. Ejecuta la asignación.
 """)
 
 # Guardar en Drive después de confirmación
