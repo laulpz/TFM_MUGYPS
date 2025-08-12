@@ -78,7 +78,7 @@ if metodo == "Desde Excel":
         demand.columns = demand.columns.str.strip()
         st.subheader("📆 Demanda desde archivo")
         st.dataframe(demand)
-elif metodo == "Desde aplicación ":
+elif metodo == "Desde aplicación":
     st.subheader("⚙️ Generador de Demanda")
     unidad = st.selectbox("Selecciona la Unidad Hospitalaria", ["Medicina Interna", "UCI", "Urgencias", "Oncología", "Quirófano"])
     col1, col2 = st.columns(2)
