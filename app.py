@@ -16,6 +16,13 @@ FILE_ID = "1zqAyIB1BLfCc2uH1v29r-clARHoh2o_s"
 descargar_bd_desde_drive(FILE_ID)
 init_db()
 
+# Barra lateral personalizada
+with st.sidebar:
+    st.title("Menú Principal")
+    st.page_link("🏥_Inicio.py", label="Inicio", icon="🏠")
+    #st.page_link("pages/1_Asignador.py", label="Asignación de Turnos", icon="📋")
+    # Añade más páginas aquí
+
 st.title("🩺 Planificador de Turnos de Enfermería")
 
 st.markdown("""
