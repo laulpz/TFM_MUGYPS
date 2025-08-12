@@ -7,18 +7,25 @@ from db_manager import (
     cargar_asignaciones, descargar_bd_desde_drive, subir_bd_a_drive
 )
 
-st.set_page_config(page_title="Inicio", page_icon="🏥", layout="wide", initial_sidebar_state="expanded")
-
-# Elimina SOLO el texto "app" manteniendo todo lo demás
+# SOLUCIÓN DEFINITIVA - Reemplaza "app" manteniendo todo lo demás
 st.markdown("""
 <style>
-    [data-testid="stSidebarNav"] + div [data-testid="stVerticalBlock"] > div:first-child {
-        display: none;
+    [data-testid="stSidebarUserContent"] > div:first-child > div:first-child > div:first-child {
+        visibility: hidden;
+        height: 0px;
+    }
+    [data-testid="stSidebarUserContent"] > div:first-child > div:first-child > div:first-child:after {
+        content: "MUGYPS";
+        visibility: visible;
+        display: block;
+        height: auto;
+        font-size: 18px;
+        font-weight: bold;
+        margin-top: -20px;
     }
 </style>
 """, unsafe_allow_html=True)
 
-# Tu título personalizado (opcional)
 st.sidebar.header("MUGYPS")
 
 
