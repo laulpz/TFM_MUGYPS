@@ -38,7 +38,7 @@ st.sidebar.header("📊 MUGYPS")  # Esto aparecerá BAJO el menú de navegación
 
 # 3. Añadir tu propio título en la posición correcta
 st.sidebar.markdown("""
-<div style="margin-top: -100px; margin-bottom: 100px;">
+<div style="margin-top: -120px; margin-bottom: 100px;">
     <h1>📊 MUGYPS</h1>
 </div>
 """, unsafe_allow_html=True)
