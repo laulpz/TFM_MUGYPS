@@ -54,6 +54,7 @@ st.sidebar.header("1️⃣📂 Sube la plantilla de personal")
 file_staff = st.sidebar.file_uploader("Plantilla de personal en formato .xlsx)", type=["xlsx"])
 if file_staff:
     st.session_state["file_staff"] = file_staff
+    #st.info("🛈 Por favor, suba una plantilla de personal para continuar con la planificación.")
     
 #Configurar la demanda de turnos
 st.sidebar.header("2️⃣📈 Selecciona el Método para ingresar demanda:")
