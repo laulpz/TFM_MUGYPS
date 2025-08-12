@@ -8,19 +8,18 @@ from db_manager import (
 )
 
 st.set_page_config(page_title="Inicio", page_icon="🏥", layout="wide", initial_sidebar_state="expanded")
-hide_streamlit_style = """
+
+# Elimina SOLO el texto "app" manteniendo todo lo demás
+st.markdown("""
 <style>
-    section[data-testid="stSidebar"] div:first-child div:first-child {
-        visibility: hidden;
-    }
-    section[data-testid="stSidebar"] div:first-child div:first-child:after {
-        content: "MUGYPS";
-        visibility: visible;
-        display: block;
+    [data-testid="stSidebarNav"] + div [data-testid="stVerticalBlock"] > div:first-child {
+        display: none;
     }
 </style>
-"""
-st.markdown(hide_streamlit_style, unsafe_allow_html=True)
+""", unsafe_allow_html=True)
+
+# Tu título personalizado (opcional)
+st.sidebar.header("MUGYPS")
 
 
 # === CONFIGURA TU FILE_ID DE GOOGLE DRIVE AQUÍ ===
