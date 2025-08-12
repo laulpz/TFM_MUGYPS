@@ -305,8 +305,14 @@ if st.session_state["asignacion_completada"]:
             st.error("No se encontró el resumen mensual")
             st.stop()
 
-        st.download_button("⬇️ Descargar planilla asignada", data=to_excel_bytes(st.session_state["df_assign"].assign(Fecha=lambda x: pd.to_datetime(x['Fecha']).dt.strftime('%d/%m/%Y'))),file_name="Planilla_Asignada.xlsx")
-        st.download_button("⬇️ Descargar resumen por profesional", data=to_excel_bytes(st.session_state["resumen_mensual"]), file_name=f"Resumen_{datetime.now().strftime('%Y%m%d')}.xlsx",mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+        fecha_inicio_mod = fecha_inicio.strftime('%Y%m%d')
+        fecha_fin_mod = fecha_fin.strftime('%Y%m%d')
+        unidad_mod = unidad.replace(" ", "_")
+        file_name_planilla = f"Turnos_Asignados_{unidad_mod}_{fecha_inicio_mod}_{fecha_fin_mod}.xlsx"
+        st.download_button("⬇️ Descargar planilla asignada", data=to_excel_bytes(st.session_state["df_assign"].assign(Fecha=lambda x: pd.to_datetime(x['Fecha']).dt.strftime('%d/%m/%Y'))),file_name=file_name_planilla,
+                          mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+        st.download_button("⬇️ Descargar resumen por profesional", data=to_excel_bytes(st.session_state["resumen_mensual"]), file_name=f"Resumen_{datetime.now().strftime('%Y%m%d')}.xlsx",
+                           mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 
     elif aprobacion == "Rehacer":
         st.session_state["asignacion_completada"] = False
