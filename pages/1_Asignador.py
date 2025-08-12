@@ -8,6 +8,24 @@ from db_manager import (
     descargar_bd_desde_drive, subir_bd_a_drive, reset_db
 )
 
+#Definir funciones necesarias
+def to_excel_bytes(df):
+    """Convierte DataFrame a bytes para descarga en Excel"""
+    if df is None or df.empty:
+        return b''  # Retorna bytes vacíos si no hay datos
+    output = BytesIO()
+    with pd.ExcelWriter(output, engine="openpyxl") as writer:
+        df.to_excel(writer, index=False)
+    return output.getvalue()
+
+#Inicialización de variables
+SHIFT_HOURS = {"Mañana": 7.5, "Tarde": 7.5, "Noche": 10}
+BASE_MAX_HOURS = {"Mañana": 1642.5, "Tarde": 1642.5, "Noche": 1470}
+BASE_MAX_JORNADAS = {"Mañana": 219, "Tarde": 219, "Noche": 147}
+dias_semana = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"]
+turnos = ["Mañana", "Tarde", "Noche"]
+
+
 #Títulos y descripción
 st.set_page_config(page_title="Asignador", layout="wide")
 st.title("📋 Asignador de Turnos")
@@ -41,13 +59,6 @@ if "asignacion_completada" not in st.session_state:
 
 if "file_staff" not in st.session_state:
     st.session_state["file_staff"] = None
-
-#Inicialización de variables
-SHIFT_HOURS = {"Mañana": 7.5, "Tarde": 7.5, "Noche": 10}
-BASE_MAX_HOURS = {"Mañana": 1642.5, "Tarde": 1642.5, "Noche": 1470}
-BASE_MAX_JORNADAS = {"Mañana": 219, "Tarde": 219, "Noche": 147}
-dias_semana = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"]
-turnos = ["Mañana", "Tarde", "Noche"]
 
 #Subida plantilla de personal. 10/08 añadido if para st.session_state
 st.sidebar.header("1️⃣📂 Sube la plantilla de personal")
@@ -254,8 +265,11 @@ if st.session_state["asignacion_completada"]:
         df_uncov = pd.DataFrame(uncovered)
         st.markdown("⚠️ Turnos sin cubrir")
         #st.subheader("⚠️ Turnos sin cubrir")
-        st.dataframe(pd.DataFrame(uncovered))
-        st.download_button("⬇️ Descargar turnos sin cubrir", data=to_excel_bytes(df_uncov), file_name="Turnos_Sin_Cubrir.xlsx")
+        st.dataframe(df_uncov)
+        # Solo mostrar botón si hay datos
+        if not df_uncov.empty:
+            st.download_button("⬇️ Descargar turnos sin cubrir", data=to_excel_bytes(df_uncov), file_name=f"Turnos_Sin_Cubrir_{datetime.now().strftime('%Y%m%d')}.xlsx",
+                               mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 
     st.markdown("### ✅ Confirmación de asignación")
     aprobacion = st.radio("¿Deseas aprobar esta asignación?", ["Pendiente", "Aprobar", "Rehacer"], index=0)
@@ -290,12 +304,6 @@ if st.session_state["asignacion_completada"]:
         if "resumen_mensual" not in st.session_state:
             st.error("No se encontró el resumen mensual")
             st.stop()
-
-        def to_excel_bytes(df):
-            output = BytesIO()
-            with pd.ExcelWriter(output, engine="openpyxl") as writer:
-                df.to_excel(writer, index=False)
-            return output.getvalue()
 
         st.download_button("⬇️ Descargar planilla asignada", data=to_excel_bytes(st.session_state["df_assign"].assign(Fecha=lambda x: pd.to_datetime(x['Fecha']).dt.strftime('%d/%m/%Y'))),file_name="Planilla_Asignada.xlsx")
         st.download_button("⬇️ Descargar resumen por profesional", data=to_excel_bytes(st.session_state["resumen_mensual"]), file_name=f"Resumen_{datetime.now().strftime('%Y%m%d')}.xlsx",mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
