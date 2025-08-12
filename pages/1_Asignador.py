@@ -281,6 +281,7 @@ if st.session_state["asignacion_completada"]:
         # Debug: Mostrar estructura del DataFrame
         #st.write("Debug - df_assign columns:", st.session_state["df_assign"].columns)
         #st.write("Debug - df_assign dtypes:", st.session_state["df_assign"].dtypes)
+        
         # Verificar columnas requeridas (asegurando que los nombres coincidan exactamente)
         required_cols = ["Fecha", "Unidad", "Turno", "ID_Enfermera", "Jornada", "Horas"]
         if not all(col in st.session_state["df_assign"].columns for col in required_cols):
@@ -308,11 +309,37 @@ if st.session_state["asignacion_completada"]:
             st.error("No se encontró el resumen mensual")
             st.stop()
 
-        
-        file_name_planilla = f"Turnos_Asignados_{unidad.replace(" ","_")}_{fecha_inicio.strftime('%Y%m%d')}_{fecha_fin.strftime('%Y%m%d')}.xlsx"
-        file_name_resumen = f"Resumen_{unidad.replace(" ","_")}_{fecha_inicio.strftime('%Y%m%d')}_{fecha_fin.strftime('%Y%m%d')}.xlsx"
-        st.download_button("⬇️ Descargar planilla asignada", data=to_excel_bytes(st.session_state["df_assign"].assign(Fecha=lambda x: pd.to_datetime(x['Fecha']).dt.strftime('%d/%m/%Y'))),file_name=file_name_planilla, mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-        st.download_button("⬇️ Descargar resumen por profesional", data=to_excel_bytes(st.session_state["resumen_mensual"]), file_name=file_name_resumen, mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+   
+        # Obtener unidad y fechas de la demanda
+        if metodo == "Desde Excel":
+            # Extraer unidad (tomamos la primera que aparece)
+            unidad_descarga = demand['Unidad'].iloc[0].replace(" ", "_")
+            # Extraer rango de fechas
+            fechas_demand = pd.to_datetime(demand['Fecha'])
+            fecha_inicio_descarga = fechas_demand.min()
+            fecha_fin_descarga = fechas_demand.max()
+        else:
+            # Usar los valores de cuando se generó desde la aplicación
+            unidad_descarga = unidad.replace(" ", "_")
+            fecha_inicio_descarga = fecha_inicio
+            fecha_fin_descarga = fecha_fin
+
+        # Crear nombres de archivo usando las variables correctas
+        file_name_planilla = f"Turnos_Asignados_{unidad_descarga}_{fecha_inicio_descarga.strftime('%Y%m%d')}_{fecha_fin_descarga.strftime('%Y%m%d')}.xlsx"
+        file_name_resumen = f"Resumen_{unidad_descarga}_{fecha_inicio_descarga.strftime('%Y%m%d')}_{fecha_fin_descarga.strftime('%Y%m%d')}.xlsx"
+    
+        st.download_button(
+            "⬇️ Descargar planilla asignada", 
+            data=to_excel_bytes(st.session_state["df_assign"].assign(Fecha=lambda x: pd.to_datetime(x['Fecha']).dt.strftime('%d/%m/%Y'))),
+            file_name=file_name_planilla, 
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
+        st.download_button(
+            "⬇️ Descargar resumen por profesional", 
+            data=to_excel_bytes(st.session_state["resumen_mensual"]), 
+            file_name=file_name_resumen, 
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
 
     elif aprobacion == "Rehacer":
         st.session_state["asignacion_completada"] = False
