@@ -39,7 +39,7 @@ st.markdown("""
        - `Fechas_No_Disponibilidad` (lista `YYYY-MM-DD` separadas por comas)
     2. Crea la demanda de turnos en el rango de fechas de interés de una de las siguientes formas:
         - Suba la demanda de turnos** (`.xlsx`) con las columnas `Fecha`, `Unidad`, `Turno` (`Mañana`/`Tarde`/`Noche`), `Personal_Requerido`
-        - Genere la demanda desde la propia aplicación de manera manual
+        - Genere la demanda directamente desde la propia aplicación
     3. Ejecuta la asignación. 
     """)
 
@@ -69,7 +69,7 @@ if file_staff:
     
 #Configurar la demanda de turnos
 st.sidebar.header("2️⃣📈 Selecciona el Método para ingresar demanda:")
-metodo = st.sidebar.selectbox("Selecciona una opción. Generar Manualmente se muestra por defecto", ["Generar manualmente","Desde Excel"])
+metodo = st.sidebar.selectbox("Selecciona una opción. Generar desde la aplicación se muestra por defecto", ["Generar desde aplicación","Desde Excel"])
 demand = None
 if metodo == "Desde Excel":
     file_demand = st.sidebar.file_uploader("Demanda de turnos (.xlsx)", type=["xlsx"])
@@ -79,7 +79,7 @@ if metodo == "Desde Excel":
         st.subheader("📆 Demanda desde archivo")
         st.dataframe(demand)
 elif metodo == "Generar manualmente":
-    st.subheader("⚙️ Generador de Demanda Manual")
+    st.subheader("⚙️ Generador de Demanda")
     unidad = st.selectbox("Selecciona la Unidad Hospitalaria", ["Medicina Interna", "UCI", "Urgencias", "Oncología", "Quirófano"])
     col1, col2 = st.columns(2)
     fecha_inicio = col1.date_input("Fecha de inicio", value=date(2025, 1, 1))
