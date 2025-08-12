@@ -8,7 +8,6 @@ from db_manager import (
     cargar_asignaciones, descargar_bd_desde_drive, subir_bd_a_drive
 )
 
-
 st.set_page_config(  # ← Esto es imprescindible
     page_title="Inicio",  # Título en la pestaña del navegador
     page_icon="🏥",       # Icono
@@ -33,3 +32,36 @@ Esta herramienta permite planificar automáticamente los turnos de enfermería p
 2. Pestaña Generador de demanda
 3. Pestaña Visualización turnos
 """)
+
+
+import streamlit as st
+import matplotlib.pyplot as plt
+from matplotlib.patches import Rectangle
+import numpy as np
+
+# Configuración del canvas
+fig, ax = plt.subplots(figsize=(10, 4), facecolor='#0E1117')  # Fondo oscuro como Streamlit
+ax.set_xlim(0, 10)
+ax.set_ylim(0, 4)
+ax.axis('off')
+
+# Elementos gráficos
+ax.add_patch(Rectangle((0.5, 0.5), 9, 3, fill=True, color='#1f77b4', alpha=0.2))  # Marco
+
+# Texto principal
+ax.text(5, 2.5, 'MUGYPS', ha='center', va='center', 
+        fontsize=48, color='white', weight='bold', fontfamily='sans-serif')
+
+# Subtítulo
+ax.text(5, 1.5, 'Herramienta de análisis geoespacial', ha='center', va='center',
+        fontsize=18, color='#9fbdd7', fontfamily='sans-serif')
+
+# Logo/icono
+ax.text(1, 3.2, '📊', ha='center', va='center', fontsize=36)
+
+# Línea decorativa
+ax.plot([3, 7], [1.2, 1.2], color='#4dabdb', linewidth=3, alpha=0.7)
+
+# Guardar y mostrar
+plt.tight_layout()
+st.pyplot(fig)
