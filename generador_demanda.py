@@ -17,8 +17,8 @@ def generar_demanda_interactiva():
     ])
 
     col1, col2 = st.columns(2)
-    fecha_inicio = col1.date_input("Fecha de inicio", value=date(2026, 1, 1))
-    fecha_fin = col2.date_input("Fecha de fin", value=date(2026, 1, 31))
+    fecha_inicio = col1.date_input("Fecha de inicio", value=date(2025, 1, 1))
+    fecha_fin = col2.date_input("Fecha de fin", value=date(2025, 1, 31))
     fechas = [fecha_inicio + timedelta(days=i) for i in range((fecha_fin - fecha_inicio).days + 1)]
 
     dias_semana = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"]
