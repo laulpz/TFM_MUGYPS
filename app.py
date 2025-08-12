@@ -8,19 +8,19 @@ from db_manager import (
 )
 
 st.set_page_config(page_title="Inicio", page_icon="🏥", layout="wide", initial_sidebar_state="expanded")
-# Elimina el texto "app" del sidebar
 hide_streamlit_style = """
 <style>
-    section[data-testid="stSidebar"] div:first-child {
-        display: none !important;
+    section[data-testid="stSidebar"] div:first-child div:first-child {
+        visibility: hidden;
+    }
+    section[data-testid="stSidebar"] div:first-child div:first-child:after {
+        content: "MUGYPS";
+        visibility: visible;
+        display: block;
     }
 </style>
 """
 st.markdown(hide_streamlit_style, unsafe_allow_html=True)
-
-# Ahora puedes agregar tu propio título personalizado
-st.sidebar.markdown("# MUGYPS")
-
 
 
 # === CONFIGURA TU FILE_ID DE GOOGLE DRIVE AQUÍ ===
