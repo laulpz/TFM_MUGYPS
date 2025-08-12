@@ -11,7 +11,11 @@ from db_manager import (
 #Títulos y descripción
 st.set_page_config(page_title="Asignador", layout="wide")
 st.title("📋 Asignador de Turnos (Excel o Generador Manual)")
-st.markdown("""añadir descripción aqui """)
+st.markdown("""
+1. Sube el archivo Excel de plantilla de personal.
+1. Introduce la demanda semanal por turnos.
+2. Elige el rango de fechas.
+4. Ejecuta la asignación. """)
 
 #Carga BBDD, debería cargarse desde estado anterior
 FILE_ID = "1zqAyIB1BLfCc2uH1v29r-clARHoh2o_s"
