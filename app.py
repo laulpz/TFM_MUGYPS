@@ -28,6 +28,7 @@ init_db()
 with st.sidebar:
     st.title("Menú Principal🏥")
     st.markdown("### Menú Principal")
+    st.page_link("app.py", label="🏠 Inicio", icon="⭐")
     st.page_link("pages/1_📋Asignador.py", label="Asignación de Turnos", icon="📋")
     st.page_link("pages/2_🗓️ Generador de Demanda.py", label="Generador de demanda", icon="📋")
     st.page_link("pages/3_📊 Informes.py", label="Informes", icon="📋")
