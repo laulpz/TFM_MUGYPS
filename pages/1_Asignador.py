@@ -124,8 +124,8 @@ if file_staff is not None and st.button("3️⃣🚀 Ejecutar asignación"):
         for _, row in staff.iterrows()
     }
 
-    #st.markdown("""👩‍⚕️ Personal cargado""")
-    st.subheader("👩‍⚕️ Personal cargado")
+    st.markdown("""👩‍⚕️ Personal cargado""")
+    #st.subheader("👩‍⚕️ Personal cargado")
     st.dataframe(staff)
 
     #Aquí está obviando las horas anteriores. En código 31/07 algo así: 
