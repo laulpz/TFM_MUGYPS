@@ -265,12 +265,14 @@ if st.session_state["asignacion_completada"]:
     if uncovered:
         df_uncov = pd.DataFrame(uncovered)
         st.markdown("⚠️ Turnos sin cubrir")
-        #st.subheader("⚠️ Turnos sin cubrir")
         st.dataframe(df_uncov)
         # Solo mostrar botón si hay datos
-        
         if not df_uncov.empty:
-            file_name_uncov = f"Turnos_Descubiertos_{unidad_mod}_{fecha_inicio_mod}_{fecha_fin_mod}.xlsx"
+            unidad_descarga = unidad.replace(" ", "_")
+            fecha_inicio_descarga = fecha_inicio
+            fecha_fin_descarga = fecha_fin
+            # Crear nombres de archivo
+            file_name_uncov = f"Turnos_Descubiertos_{unidad_descarga}_{fecha_inicio_descarga.strftime('%Y%m%d')}_{fecha_fin_descarga.strftime('%Y%m%d')}.xlsx"
             st.download_button("⬇️ Descargar turnos sin cubrir", data=to_excel_bytes(df_uncov), file_name=file_name_uncov,
                                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 
