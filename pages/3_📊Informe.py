@@ -19,7 +19,7 @@ def to_excel_bytes(df):
     return output.getvalue()
 
 st.set_page_config(page_title="Informe", layout="wide")
-st.title("📊 Visualizador de Turnos asignados")
+st.title("📊Visualizador de Turnos asignados")
 
 df = cargar_resumen_mensual()
 
