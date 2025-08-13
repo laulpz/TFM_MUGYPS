@@ -19,44 +19,54 @@ def to_excel_bytes(df):
     return output.getvalue()
 
 
-
 def parse_dates(cell):
     """
     Parsea fechas de no disponibilidad en varios formatos a lista de strings 'YYYY-MM-DD'.
-    Maneja:
-    - Fechas individuales (20/07/2025 o 2025-07-20)
-    - Rangos (01/02/2025-10/02/2025 o 2025-02-01-2025-02-10)
-    - Listas separadas por comas
-    - Valores vacíos/None
+    Maneja todos los casos posibles de forma segura.
     """
+    def safe_str_convert(value):
+        """Conversión segura a string"""
+        try:
+            return str(value).strip()
+        except:
+            return ""
+
     def try_parse_date(date_str):
         """Intenta parsear una fecha en múltiples formatos"""
+        date_str = safe_str_convert(date_str)
         for fmt in ("%d/%m/%Y", "%Y-%m-%d"):
             try:
-                return datetime.strptime(date_str.strip(), fmt).date()
+                return datetime.strptime(date_str, fmt).date()
             except ValueError:
                 continue
         return None
 
-    # Caso 1: Valor es None, NaN o vacío
-    if pd.isna(cell) or cell is None or str(cell).strip() == "":
+    # Caso 1: Valor es None, NaN, vacío o cualquier tipo inesperado
+    try:
+        if pd.isna(cell) or cell is None or not safe_str_convert(cell):
+            return []
+    except Exception:
         return []
 
-    # Caso 2: Si ya es una lista (por si acaso)
+    # Caso 2: Si ya es una lista válida
     if isinstance(cell, list):
-        return sorted(list(set(cell)))  # Eliminar duplicados y ordenar
+        try:
+            return sorted(list(set(cell)))  # Eliminar duplicados y ordenar
+        except:
+            return []
 
+    # Procesamiento principal
+    dates = set()
+    content = safe_str_convert(cell)
+    
     try:
-        dates = set()  # Usamos set para evitar duplicados
-        content = str(cell).strip()
-        
-        # Caso 3: Si es un timestamp de pandas (ej: '2025-04-14 00:00:00')
+        # Caso 3: Timestamp de pandas (ej: '2025-04-14 00:00:00')
         if " " in content and "-" in content and ":" in content:
             try:
                 date_part = content.split(" ")[0]
                 date_obj = datetime.strptime(date_part, "%Y-%m-%d").date()
                 return [date_obj.strftime("%Y-%m-%d")]
-            except ValueError:
+            except:
                 pass
 
         # Dividir por comas y procesar cada parte
@@ -67,13 +77,13 @@ def parse_dates(cell):
             if "-" in part:
                 range_parts = part.split("-")
                 if len(range_parts) == 2:
-                    start, end = range_parts[0].strip(), range_parts[1].strip()
+                    start, end = map(safe_str_convert, range_parts)
                     start_date = try_parse_date(start)
                     end_date = try_parse_date(end)
                     
                     if start_date and end_date:
                         if start_date > end_date:
-                            st.warning(f"Rango inválido: fecha inicio {start} > fecha fin {end}")
+                            st.warning(f"Rango inválido: {start} > {end}")
                             continue
                             
                         current = start_date
@@ -92,14 +102,11 @@ def parse_dates(cell):
                 else:
                     st.warning(f"Formato de fecha no reconocido: '{part}'")
 
-        return sorted(list(dates))  # Convertir a lista ordenada
+        return sorted(list(dates))
     
     except Exception as e:
-        st.error(f"Error crítico procesando fechas en celda '{cell}': {str(e)}")
-        return []  # Retornar lista vacía para no bloquear el proceso
-
-
-
+        st.error(f"Error procesando: '{content}'. Se omitirá esta entrada.")
+        return []
 
 
 def generar_plantilla_ejemplo():
