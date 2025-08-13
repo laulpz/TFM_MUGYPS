@@ -25,40 +25,79 @@ def parse_dates(cell):
     
     dates = []
     try:
-        # Primero normalizamos el string (eliminamos espacios extra)
+        # Convertir a string y limpiar
         content = str(cell).strip()
         
-        # Separamos por comas para obtener elementos individuales
+        # Manejar el caso cuando pandas pasa un datetime como string (ej: '2025-04-14 00:00:00')
+        if " " in content and "-" in content:
+            content = content.split(" ")[0]  # Tomar solo la parte de la fecha
+        
+        # Separar por comas
         parts = [part.strip() for part in content.split(",") if part.strip()]
         
         for part in parts:
-            if "-" in part:  # Es un posible rango
-                range_parts = [p.strip() for p in part.split("-") if p.strip()]
-                
-                # Validamos que sea un rango válido (exactamente 2 partes)
-                if len(range_parts) == 2:
-                    start_date = datetime.strptime(range_parts[0], "%d/%m/%Y").date()
-                    end_date = datetime.strptime(range_parts[1], "%d/%m/%Y").date()
-                    
-                    # Generamos todas las fechas del rango
-                    current_date = start_date
-                    while current_date <= end_date:
-                        dates.append(current_date.strftime("%Y-%m-%d"))
-                        current_date += timedelta(days=1)
-                else:
-                    st.warning(f"Formato de rango inválido: '{part}'. Se esperaba 'dd/mm/yyyy-dd/mm/yyyy'")
-            else:  # Es una fecha individual
+            # Intentar parsear como fecha individual primero
+            try:
+                # Probar formato dd/mm/yyyy
                 try:
                     date_obj = datetime.strptime(part, "%d/%m/%Y").date()
                     dates.append(date_obj.strftime("%Y-%m-%d"))
+                    continue
                 except ValueError:
-                    st.warning(f"Fecha inválida: '{part}'. Formato esperado: 'dd/mm/yyyy'")
+                    pass
+                
+                # Probar formato yyyy-mm-dd
+                try:
+                    date_obj = datetime.strptime(part, "%Y-%m-%d").date()
+                    dates.append(date_obj.strftime("%Y-%m-%d"))
+                    continue
+                except ValueError:
+                    pass
+                
+                # Probar datetime de pandas (yyyy-mm-dd hh:mm:ss)
+                try:
+                    date_obj = datetime.strptime(part.split(" ")[0], "%Y-%m-%d").date()
+                    dates.append(date_obj.strftime("%Y-%m-%d"))
+                    continue
+                except (ValueError, IndexError):
+                    pass
+                
+                # Si no es fecha individual, probar como rango
+                if "-" in part:
+                    range_parts = [p.strip() for p in part.split("-") if p.strip()]
+                    if len(range_parts) == 2:
+                        start_date = None
+                        end_date = None
+                        
+                        # Probar todos los formatos posibles para cada parte del rango
+                        for fmt in ["%d/%m/%Y", "%Y-%m-%d"]:
+                            try:
+                                if not start_date:
+                                    start_date = datetime.strptime(range_parts[0], fmt).date()
+                                if not end_date:
+                                    end_date = datetime.strptime(range_parts[1], fmt).date()
+                            except ValueError:
+                                pass
+                        
+                        if start_date and end_date:
+                            current_date = start_date
+                            while current_date <= end_date:
+                                dates.append(current_date.strftime("%Y-%m-%d"))
+                                current_date += timedelta(days=1)
+                            continue
+                
+                # Si llegamos aquí, el formato no es reconocido
+                st.warning(f"Formato no reconocido: '{part}'. Se esperaba 'dd/mm/yyyy' o 'yyyy-mm-dd'")
+                
+            except Exception as e:
+                st.warning(f"Error al procesar: '{part}'. Error: {str(e)}")
         
         return sorted(list(set(dates)))  # Eliminar duplicados y ordenar
     
     except Exception as e:
-        st.error(f"Error al procesar fechas: {str(e)}")
+        st.error(f"Error general al procesar fechas: {str(e)}")
         return []
+
 
 def generar_plantilla_ejemplo():
     data = {
