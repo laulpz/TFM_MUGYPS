@@ -18,36 +18,47 @@ def to_excel_bytes(df):
         df.to_excel(writer, index=False)
     return output.getvalue()
 
+
 def parse_dates(cell):
     if pd.isna(cell) or cell == "":
         return []
     
+    dates = []
     try:
-        dates = []
-        # Primero separamos por comas para obtener elementos individuales
-        parts = [part.strip() for part in str(cell).split(",")]
+        # Primero normalizamos el string (eliminamos espacios extra)
+        content = str(cell).strip()
+        
+        # Separamos por comas para obtener elementos individuales
+        parts = [part.strip() for part in content.split(",") if part.strip()]
         
         for part in parts:
-            if "-" in part:  # Es un rango de fechas
-                start_str, end_str = [s.strip() for s in part.split("-")]
-                start_date = datetime.strptime(start_str, "%d/%m/%Y").date()
-                end_date = datetime.strptime(end_str, "%d/%m/%Y").date()
+            if "-" in part:  # Es un posible rango
+                range_parts = [p.strip() for p in part.split("-") if p.strip()]
                 
-                # Generamos todas las fechas del rango
-                current_date = start_date
-                while current_date <= end_date:
-                    dates.append(current_date.strftime("%Y-%m-%d"))
-                    current_date += timedelta(days=1)
+                # Validamos que sea un rango válido (exactamente 2 partes)
+                if len(range_parts) == 2:
+                    start_date = datetime.strptime(range_parts[0], "%d/%m/%Y").date()
+                    end_date = datetime.strptime(range_parts[1], "%d/%m/%Y").date()
+                    
+                    # Generamos todas las fechas del rango
+                    current_date = start_date
+                    while current_date <= end_date:
+                        dates.append(current_date.strftime("%Y-%m-%d"))
+                        current_date += timedelta(days=1)
+                else:
+                    st.warning(f"Formato de rango inválido: '{part}'. Se esperaba 'dd/mm/yyyy-dd/mm/yyyy'")
             else:  # Es una fecha individual
-                date_obj = datetime.strptime(part.strip(), "%d/%m/%Y").date()
-                dates.append(date_obj.strftime("%Y-%m-%d"))
+                try:
+                    date_obj = datetime.strptime(part, "%d/%m/%Y").date()
+                    dates.append(date_obj.strftime("%Y-%m-%d"))
+                except ValueError:
+                    st.warning(f"Fecha inválida: '{part}'. Formato esperado: 'dd/mm/yyyy'")
         
-        return list(set(dates))  # Eliminar duplicados
+        return sorted(list(set(dates)))  # Eliminar duplicados y ordenar
     
-    except ValueError as e:
-        st.error(f"Error al parsear fechas: {e}\nFormato esperado: 'dd/mm/yyyy-dd/mm/yyyy, dd/mm/yyyy'")
+    except Exception as e:
+        st.error(f"Error al procesar fechas: {str(e)}")
         return []
-
 
 def generar_plantilla_ejemplo():
     data = {
