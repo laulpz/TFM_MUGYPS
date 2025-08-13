@@ -18,84 +18,85 @@ def to_excel_bytes(df):
         df.to_excel(writer, index=False)
     return output.getvalue()
 
+
+
 def parse_dates(cell):
+    """
+    Parsea fechas de no disponibilidad en varios formatos a lista de strings 'YYYY-MM-DD'.
+    Maneja:
+    - Fechas individuales (20/07/2025 o 2025-07-20)
+    - Rangos (01/02/2025-10/02/2025 o 2025-02-01-2025-02-10)
+    - Listas separadas por comas
+    - Valores vacíos/None
+    """
+    def try_parse_date(date_str):
+        """Intenta parsear una fecha en múltiples formatos"""
+        for fmt in ("%d/%m/%Y", "%Y-%m-%d"):
+            try:
+                return datetime.strptime(date_str.strip(), fmt).date()
+            except ValueError:
+                continue
+        return None
+
+    # Caso 1: Valor es None, NaN o vacío
+    if pd.isna(cell) or cell is None or str(cell).strip() == "":
+        return []
+
+    # Caso 2: Si ya es una lista (por si acaso)
+    if isinstance(cell, list):
+        return sorted(list(set(cell)))  # Eliminar duplicados y ordenar
+
     try:
-        # Caso 1: Valor es None, NaN o vacío
-        if cell is None or (isinstance(cell, float) and pd.isna(cell)) or str(cell).strip() == "":
-            return []
-        
-        # Convertir a string y limpiar
+        dates = set()  # Usamos set para evitar duplicados
         content = str(cell).strip()
         
-        # Caso 2: Si es un timestamp de pandas (ej: '2025-04-14 00:00:00')
+        # Caso 3: Si es un timestamp de pandas (ej: '2025-04-14 00:00:00')
         if " " in content and "-" in content and ":" in content:
             try:
                 date_part = content.split(" ")[0]
                 date_obj = datetime.strptime(date_part, "%Y-%m-%d").date()
                 return [date_obj.strftime("%Y-%m-%d")]
-            except:
+            except ValueError:
                 pass
-        
-        # Caso 3: Si ya es una lista (por si acaso)
-        if isinstance(cell, list):
-            return cell
-        
-        dates = []
+
+        # Dividir por comas y procesar cada parte
         parts = [part.strip() for part in content.split(",") if part.strip()]
         
         for part in parts:
-            try:
-                # Intentar formato dd/mm/yyyy
-                try:
-                    date_obj = datetime.strptime(part, "%d/%m/%Y").date()
-                    dates.append(date_obj.strftime("%Y-%m-%d"))
-                    continue
-                except ValueError:
-                    pass
-                
-                # Intentar formato yyyy-mm-dd
-                try:
-                    date_obj = datetime.strptime(part, "%Y-%m-%d").date()
-                    dates.append(date_obj.strftime("%Y-%m-%d"))
-                    continue
-                except ValueError:
-                    pass
-                
-                # Manejar rangos
-                if "-" in part:
-                    range_parts = part.split("-")
-                    if len(range_parts) == 2:
-                        start, end = range_parts[0].strip(), range_parts[1].strip()
-                        start_date = None
-                        end_date = None
-                        
-                        # Probar ambos formatos para cada extremo del rango
-                        for fmt in ["%d/%m/%Y", "%Y-%m-%d"]:
-                            try:
-                                if not start_date:
-                                    start_date = datetime.strptime(start, fmt).date()
-                                if not end_date:
-                                    end_date = datetime.strptime(end, fmt).date()
-                            except ValueError:
-                                continue
-                        
-                        if start_date and end_date:
-                            current = start_date
-                            while current <= end_date:
-                                dates.append(current.strftime("%Y-%m-%d"))
-                                current += timedelta(days=1)
+            # Manejar rangos (contiene '-')
+            if "-" in part:
+                range_parts = part.split("-")
+                if len(range_parts) == 2:
+                    start, end = range_parts[0].strip(), range_parts[1].strip()
+                    start_date = try_parse_date(start)
+                    end_date = try_parse_date(end)
+                    
+                    if start_date and end_date:
+                        if start_date > end_date:
+                            st.warning(f"Rango inválido: fecha inicio {start} > fecha fin {end}")
                             continue
-                
-                st.warning(f"Formato no reconocido: '{part}'. Se esperaba 'dd/mm/yyyy' o 'yyyy-mm-dd'")
-            except Exception as e:
-                st.warning(f"Error procesando '{part}': {str(e)}")
-        
-        return sorted(list(set(dates)))
+                            
+                        current = start_date
+                        while current <= end_date:
+                            dates.add(current.strftime("%Y-%m-%d"))
+                            current += timedelta(days=1)
+                    else:
+                        st.warning(f"Formato no reconocido en rango: '{part}'")
+                else:
+                    st.warning(f"Formato de rango inválido: '{part}'")
+            # Fecha individual
+            else:
+                date_obj = try_parse_date(part)
+                if date_obj:
+                    dates.add(date_obj.strftime("%Y-%m-%d"))
+                else:
+                    st.warning(f"Formato de fecha no reconocido: '{part}'")
+
+        return sorted(list(dates))  # Convertir a lista ordenada
     
     except Exception as e:
-        st.error(f"Error crítico procesando fechas: {str(e)}")
-        return []
-
+        st.error(f"Error crítico procesando fechas en celda '{cell}': {str(e)}")
+        return []  # Retornar lista vacía para no bloquear el proceso
 
 
 
