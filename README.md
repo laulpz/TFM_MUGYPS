@@ -10,7 +10,7 @@ Aplicación web interactiva para asignar turnos de enfermería en hospitales pú
   - Control del máximo de horas anuales (1667,5 h diurno, 1490 h nocturno).
 - Selección de **rango de fechas** personalizado (planificación mensual, trimestral, etc.).
 - **Generador de Demanda**: Configuración interactiva de necesidades por unidad y fecha.
-- **Informes**: Visualización y descarga de resúmenes mensuales.
+- **Informes**: Visualización y descarga de resúmenes por profesional.
 
 - **Persistencia de datos** en base de datos SQLite local:
   - Registro de asignaciones anteriores.
