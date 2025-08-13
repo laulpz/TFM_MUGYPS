@@ -18,27 +18,34 @@ def to_excel_bytes(df):
         df.to_excel(writer, index=False)
     return output.getvalue()
 
-
 def parse_dates(cell):
-    if pd.isna(cell) or cell == "":
-        return []
-    
-    dates = []
     try:
+        # Caso 1: Valor es None, NaN o vacío
+        if cell is None or (isinstance(cell, float) and pd.isna(cell)) or str(cell).strip() == "":
+            return []
+        
         # Convertir a string y limpiar
         content = str(cell).strip()
         
-        # Manejar el caso cuando pandas pasa un datetime como string (ej: '2025-04-14 00:00:00')
-        if " " in content and "-" in content:
-            content = content.split(" ")[0]  # Tomar solo la parte de la fecha
+        # Caso 2: Si es un timestamp de pandas (ej: '2025-04-14 00:00:00')
+        if " " in content and "-" in content and ":" in content:
+            try:
+                date_part = content.split(" ")[0]
+                date_obj = datetime.strptime(date_part, "%Y-%m-%d").date()
+                return [date_obj.strftime("%Y-%m-%d")]
+            except:
+                pass
         
-        # Separar por comas
+        # Caso 3: Si ya es una lista (por si acaso)
+        if isinstance(cell, list):
+            return cell
+        
+        dates = []
         parts = [part.strip() for part in content.split(",") if part.strip()]
         
         for part in parts:
-            # Intentar parsear como fecha individual primero
             try:
-                # Probar formato dd/mm/yyyy
+                # Intentar formato dd/mm/yyyy
                 try:
                     date_obj = datetime.strptime(part, "%d/%m/%Y").date()
                     dates.append(date_obj.strftime("%Y-%m-%d"))
@@ -46,7 +53,7 @@ def parse_dates(cell):
                 except ValueError:
                     pass
                 
-                # Probar formato yyyy-mm-dd
+                # Intentar formato yyyy-mm-dd
                 try:
                     date_obj = datetime.strptime(part, "%Y-%m-%d").date()
                     dates.append(date_obj.strftime("%Y-%m-%d"))
@@ -54,49 +61,44 @@ def parse_dates(cell):
                 except ValueError:
                     pass
                 
-                # Probar datetime de pandas (yyyy-mm-dd hh:mm:ss)
-                try:
-                    date_obj = datetime.strptime(part.split(" ")[0], "%Y-%m-%d").date()
-                    dates.append(date_obj.strftime("%Y-%m-%d"))
-                    continue
-                except (ValueError, IndexError):
-                    pass
-                
-                # Si no es fecha individual, probar como rango
+                # Manejar rangos
                 if "-" in part:
-                    range_parts = [p.strip() for p in part.split("-") if p.strip()]
+                    range_parts = part.split("-")
                     if len(range_parts) == 2:
+                        start, end = range_parts[0].strip(), range_parts[1].strip()
                         start_date = None
                         end_date = None
                         
-                        # Probar todos los formatos posibles para cada parte del rango
+                        # Probar ambos formatos para cada extremo del rango
                         for fmt in ["%d/%m/%Y", "%Y-%m-%d"]:
                             try:
                                 if not start_date:
-                                    start_date = datetime.strptime(range_parts[0], fmt).date()
+                                    start_date = datetime.strptime(start, fmt).date()
                                 if not end_date:
-                                    end_date = datetime.strptime(range_parts[1], fmt).date()
+                                    end_date = datetime.strptime(end, fmt).date()
                             except ValueError:
-                                pass
+                                continue
                         
                         if start_date and end_date:
-                            current_date = start_date
-                            while current_date <= end_date:
-                                dates.append(current_date.strftime("%Y-%m-%d"))
-                                current_date += timedelta(days=1)
+                            current = start_date
+                            while current <= end_date:
+                                dates.append(current.strftime("%Y-%m-%d"))
+                                current += timedelta(days=1)
                             continue
                 
-                # Si llegamos aquí, el formato no es reconocido
                 st.warning(f"Formato no reconocido: '{part}'. Se esperaba 'dd/mm/yyyy' o 'yyyy-mm-dd'")
-                
             except Exception as e:
-                st.warning(f"Error al procesar: '{part}'. Error: {str(e)}")
+                st.warning(f"Error procesando '{part}': {str(e)}")
         
-        return sorted(list(set(dates)))  # Eliminar duplicados y ordenar
+        return sorted(list(set(dates)))
     
     except Exception as e:
-        st.error(f"Error general al procesar fechas: {str(e)}")
+        st.error(f"Error crítico procesando fechas: {str(e)}")
         return []
+
+
+
+
 
 
 def generar_plantilla_ejemplo():
