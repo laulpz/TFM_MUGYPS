@@ -68,7 +68,7 @@ if "file_staff" not in st.session_state:
 
 #Subida plantilla de personal. 10/08 añadido if para st.session_state
 st.sidebar.header("1️⃣📂 Sube la plantilla de personal")
-file_staff = st.sidebar.file_uploader("Plantilla de personal en formato .xlsx)", type=["xlsx"], key="file_staff_uploader")
+file_staff = st.sidebar.file_uploader("Plantilla de personal en formato .xlsx)", type=["xlsx"])
 if file_staff:
     st.session_state["file_staff"] = file_staff
     #st.info("🛈 Por favor, suba una plantilla de personal para continuar con la planificación.")
@@ -86,10 +86,10 @@ if metodo == "Desde Excel":
         st.dataframe(demand)
 elif metodo == "Desde aplicación":
     st.subheader("⚙️ Generador de Demanda")
-    unidad = st.selectbox("Selecciona la Unidad Hospitalaria", ["Medicina Interna", "UCI", "Urgencias", "Oncología", "Quirófano"], key="unidad")
+    unidad = st.selectbox("Selecciona la Unidad Hospitalaria", ["Medicina Interna", "UCI", "Urgencias", "Oncología", "Quirófano"])
     col1, col2 = st.columns(2)
-    fecha_inicio = col1.date_input("Fecha de inicio", value=st.session_state.get("fecha_inicio", date(2025, 1, 1)), key="fecha_inicio")
-    fecha_fin = col2.date_input("Fecha de fin", value=st.session_state.get("fecha_fin", date(2025, 1, 31)), key="fecha_fin")
+    fecha_inicio = col1.date_input("Fecha de inicio", value=date(2025, 1, 1))
+    fecha_fin = col2.date_input("Fecha de fin", value=date(2025, 1, 31))
     fechas = [fecha_inicio + timedelta(days=i) for i in range((fecha_fin - fecha_inicio).days + 1)]
     
     #Aviso rango de fechas erróneo
@@ -355,24 +355,25 @@ if st.session_state["asignacion_completada"]:
 
 
 
-    # Reemplaza el botón de reinicio con este código:
     if st.button("🔄 Reiniciar aplicación"):
-         # Alternativa más segura para borrado completo
-        st.session_state.clear()
+        # Limpiar archivos subidos y datos de demanda
+        keys_to_reset = [
+            "file_staff", "df_assign", "df_uncov", "asignacion_completada",
+            "uncovered", "resumen_mensual", "demand", "unidad", "fecha_inicio", "fecha_fin"
+        ]
+        for key in keys_to_reset:
+            if key in st.session_state:
+                del st.session_state[key]
     
-        # Valores por defecto
+        # Resetear valores por defecto del generador de demanda
         st.session_state.update({
-            "unidad": "Medicina Interna",
+            "unidad": "Medicina Interna",  # Valor por defecto
             "fecha_inicio": date(2025, 1, 1),
             "fecha_fin": date(2025, 1, 31),
-            "asignacion_completada": False
         })
     
-        # Función que funciona en todas versiones
-        if hasattr(st, 'rerun'):
-            st.rerun()
-        else:
-            st.experimental_rerun()
+        st.rerun()  # Forzar recarga
+    
 
 st.sidebar.markdown("---")
 if st.sidebar.button("🗑️ Resetear base de datos"):
