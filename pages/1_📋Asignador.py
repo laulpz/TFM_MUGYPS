@@ -68,7 +68,7 @@ if "file_staff" not in st.session_state:
 
 #Subida plantilla de personal. 10/08 añadido if para st.session_state
 st.sidebar.header("1️⃣📂 Sube la plantilla de personal")
-file_staff = st.sidebar.file_uploader("Plantilla de personal en formato .xlsx)", type=["xlsx"])
+file_staff = st.sidebar.file_uploader("Plantilla de personal en formato .xlsx)", type=["xlsx"], key="file_staff_uploader")
 if file_staff:
     st.session_state["file_staff"] = file_staff
     #st.info("🛈 Por favor, suba una plantilla de personal para continuar con la planificación.")
@@ -371,7 +371,8 @@ if st.session_state["asignacion_completada"]:
             "fecha_inicio": date(2025, 1, 1),
             "fecha_fin": date(2025, 1, 31),
         })
-    
+        
+        st.session_state["file_staff_uploader"] = None  # Resetear el uploader
         st.rerun()  # Forzar recarga
     
 
