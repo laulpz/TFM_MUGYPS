@@ -355,24 +355,23 @@ if st.session_state["asignacion_completada"]:
 
 
 
+    # Reemplaza el botón de reinicio con este código:
     if st.button("🔄 Reiniciar aplicación"):
-        # Limpiar archivos subidos y datos de demanda
-        keys_to_reset = [
-            "df_assign", "df_uncov", "asignacion_completada",
-            "uncovered", "resumen_mensual", "demand", "unidad", "fecha_inicio", "fecha_fin"
-        ]
-        for key in keys_to_reset:
-            if key in st.session_state:
-                del st.session_state[key]
+        # Limpiar todos los estados
+        for key in list(st.session_state.keys()):
+            del st.session_state[key]
     
-        # Resetear valores por defecto del generador de demanda
+        # Restablecer valores por defecto
         st.session_state.update({
-            "unidad": "Medicina Interna",  # Valor por defecto
+            "unidad": "Medicina Interna",
             "fecha_inicio": date(2025, 1, 1),
             "fecha_fin": date(2025, 1, 31),
+            "asignacion_completada": False,
+            "file_staff": None
         })
-        
-        st.experimental_rerun()  # Forzar recarga
+    
+        # Recargar la página - USAR st.rerun() en vez de experimental_rerun()
+        st.rerun()
     
 
 st.sidebar.markdown("---")
