@@ -19,10 +19,48 @@ def to_excel_bytes(df):
     return output.getvalue()
 
 def parse_dates(cell):
-    if pd.isna(cell): return []
-    try: return [d.strip() for d in ast.literal_eval(str(cell))]
-    except: return [d.strip() for d in str(cell).split(',')]
+    if pd.isna(cell) or cell == "":
+        return []
+    
+    try:
+        dates = []
+        # Primero separamos por comas para obtener elementos individuales
+        parts = [part.strip() for part in str(cell).split(",")]
+        
+        for part in parts:
+            if "-" in part:  # Es un rango de fechas
+                start_str, end_str = [s.strip() for s in part.split("-")]
+                start_date = datetime.strptime(start_str, "%d/%m/%Y").date()
+                end_date = datetime.strptime(end_str, "%d/%m/%Y").date()
+                
+                # Generamos todas las fechas del rango
+                current_date = start_date
+                while current_date <= end_date:
+                    dates.append(current_date.strftime("%Y-%m-%d"))
+                    current_date += timedelta(days=1)
+            else:  # Es una fecha individual
+                date_obj = datetime.strptime(part.strip(), "%d/%m/%Y").date()
+                dates.append(date_obj.strftime("%Y-%m-%d"))
+        
+        return list(set(dates))  # Eliminar duplicados
+    
+    except ValueError as e:
+        st.error(f"Error al parsear fechas: {e}\nFormato esperado: 'dd/mm/yyyy-dd/mm/yyyy, dd/mm/yyyy'")
+        return []
 
+
+def generar_plantilla_ejemplo():
+    data = {
+        "ID": ["E001", "E002"],
+        "Unidad_Asignada": ["UCI", "Urgencias"],
+        "Jornada": ["Completa", "Parcial"],
+        "Turno_Contrato": ["Mañana", "Tarde"],
+        "Fechas_No_Disponibilidad": [
+            "01/02/2025-05/02/2025, 20/07/2025",  # Ejemplo combinado
+            "15/03/2025"  # Ejemplo simple
+        ]
+    }
+    return pd.DataFrame(data)
 
 #Inicialización de variables
 SHIFT_HOURS = {"Mañana": 7.5, "Tarde": 7.5, "Noche": 10}
@@ -68,9 +106,30 @@ if "file_staff" not in st.session_state:
 
 #Subida plantilla de personal. 10/08 añadido if para st.session_state
 st.sidebar.header("1️⃣📂 Sube la plantilla de personal")
-file_staff = st.sidebar.file_uploader("Plantilla de personal en formato .xlsx)", type=["xlsx"])
+#file_staff = st.sidebar.file_uploader("Plantilla de personal en formato .xlsx)", type=["xlsx"])
+file_staff = st.sidebar.file_uploader(
+    "Plantilla de personal (.xlsx)",
+    type=["xlsx"],
+    help="""La columna 'Fechas_No_Disponibilidad' puede contener:
+    - Fechas individuales (20/07/2025)
+    - Rangos (01/02/2025-10/02/2025)
+    - Combinaciones separadas por comas"""
+)
+
+if st.sidebar.button("📥 Descargar plantilla de ejemplo"):
+    df_ejemplo = generar_plantilla_ejemplo()
+    st.sidebar.download_button(
+        label="⬇️ Plantilla_Ejemplo.xlsx",
+        data=to_excel_bytes(df_ejemplo),
+        file_name="Plantilla_Turnos_Ejemplo.xlsx",
+        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
+
 if file_staff:
     st.session_state["file_staff"] = file_staff
+    #MOSTRAR EJEMPLO DE PARSING
+    sample = staff["Fechas_No_Disponibilidad"].iloc[0] if not staff.empty else []
+    st.sidebar.markdown(f"🔍 **Ejemplo de fechas parseadas:**\n`{sample}`")
     #st.info("🛈 Por favor, suba una plantilla de personal para continuar con la planificación.")
     
 #Configurar la demanda de turnos
