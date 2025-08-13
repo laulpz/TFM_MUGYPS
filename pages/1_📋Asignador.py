@@ -33,8 +33,8 @@ turnos = ["Mañana", "Tarde", "Noche"]
 
 
 #Títulos y descripción
-#st.set_page_config(page_title="Asignador", layout="wide")
-st.title("📋 Asignador de Turnos")
+st.set_page_config(page_title="📋Asignador", layout="wide")
+st.title("📋Asignador de Turnos")
 st.markdown("""
     Instrucciones:
     1. Sube el archivo Excel de plantilla de personal (.xlsx) con las columnas:
