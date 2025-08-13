@@ -352,10 +352,28 @@ if st.session_state["asignacion_completada"]:
         st.rerun()
         #st.experimental_rerun()
 
+
+
+
     if st.button("🔄 Reiniciar aplicación"):
-        for key in list(st.session_state.keys()):
-            del st.session_state[key]
-        st.rerun()
+        # Limpiar archivos subidos y datos de demanda
+        keys_to_reset = [
+            "file_staff", "df_assign", "df_uncov", "asignacion_completada",
+            "uncovered", "resumen_mensual", "demand", "unidad", "fecha_inicio", "fecha_fin"
+        ]
+        for key in keys_to_reset:
+            if key in st.session_state:
+                del st.session_state[key]
+    
+        # Resetear valores por defecto del generador de demanda
+        st.session_state.update({
+            "unidad": "Medicina Interna",  # Valor por defecto
+            "fecha_inicio": date(2025, 1, 1),
+            "fecha_fin": date(2025, 1, 31),
+        })
+    
+        st.rerun()  # Forzar recarga
+    
 
 st.sidebar.markdown("---")
 if st.sidebar.button("🗑️ Resetear base de datos"):
