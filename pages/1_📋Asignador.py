@@ -126,9 +126,12 @@ if st.sidebar.button("📥 Descargar plantilla de ejemplo"):
     )
 
 if file_staff:
+    
     st.session_state["file_staff"] = file_staff
-    #MOSTRAR EJEMPLO DE PARSING
+    staff = pd.read_excel(file_staff)
+    staff.columns = staff.columns.str.strip()
     staff["Fechas_No_Disponibilidad"] = staff["Fechas_No_Disponibilidad"].apply(parse_dates)
+    #MOSTRAR EJEMPLO DE PARSING
     sample = staff["Fechas_No_Disponibilidad"].iloc[0] if not staff.empty else []
     st.sidebar.markdown(f"🔍 **Ejemplo de fechas parseadas:**\n`{sample}`")
     #st.info("🛈 Por favor, suba una plantilla de personal para continuar con la planificación.")
@@ -181,11 +184,8 @@ elif metodo == "Desde aplicación":
 
 #Ejecutar asignación
 if file_staff is not None and st.button("3️⃣🚀 Ejecutar asignación"):
-    staff = pd.read_excel(file_staff)
-    staff.columns = staff.columns.str.strip()
-
     staff["Fechas_No_Disponibilidad"] = staff["Fechas_No_Disponibilidad"].apply(parse_dates)
-    
+   
     #Para jornadas parciales definir 80%
     staff_max_hours = {
         row.ID: BASE_MAX_HOURS[row.Turno_Contrato] * (0.8 if row.Jornada == "Parcial" else 1)
