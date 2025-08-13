@@ -28,6 +28,7 @@ if df.empty:
     st.info("🛈 Actualmente no hay datos registrados en la Base de Datos. Ejecuta la aplicación desde la pestaña Asignador y vuelve a esta pestaña.")
     st.stop()
 
+# Conversión de tipos
 df["Año"] = df["Año"].astype(int)
 df["Mes"] = df["Mes"].astype(int)
 
@@ -44,6 +45,7 @@ unidad_sel = st.sidebar.multiselect("Unidad", unidades, default=unidades)
 turno_sel = st.sidebar.multiselect("Turno", turnos, default=turnos)
 jornada_sel = st.sidebar.multiselect("Jornada", jornadas, default=jornadas)
 
+# Aplicar filtros
 df_filtrado = df[
     (df["Año"].isin(año_sel)) &
     (df["Mes"].isin(mes_sel)) &
@@ -58,6 +60,6 @@ st.dataframe(df_filtrado, use_container_width=True)
 st.download_button(
     label="⬇️ Descargar resumen filtrado en Excel",
     data=to_excel_bytes(df_filtrado),
-    file_name="Resumen_Mensual_Filtrado.xlsx",
+    file_name="Resumen_Filtrado.xlsx",
     mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 )
