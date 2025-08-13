@@ -357,22 +357,22 @@ if st.session_state["asignacion_completada"]:
 
     # Reemplaza el botón de reinicio con este código:
     if st.button("🔄 Reiniciar aplicación"):
-        # Limpiar todos los estados
-        for key in list(st.session_state.keys()):
-            del st.session_state[key]
+         # Alternativa más segura para borrado completo
+        st.session_state.clear()
     
-        # Restablecer valores por defecto
+        # Valores por defecto
         st.session_state.update({
             "unidad": "Medicina Interna",
             "fecha_inicio": date(2025, 1, 1),
             "fecha_fin": date(2025, 1, 31),
-            "asignacion_completada": False,
-            "file_staff": None
+            "asignacion_completada": False
         })
     
-        # Recargar la página - USAR st.rerun() en vez de experimental_rerun()
-        st.rerun()
-    
+        # Función que funciona en todas versiones
+        if hasattr(st, 'rerun'):
+            st.rerun()
+        else:
+            st.experimental_rerun()
 
 st.sidebar.markdown("---")
 if st.sidebar.button("🗑️ Resetear base de datos"):
