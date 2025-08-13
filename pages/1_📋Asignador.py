@@ -86,10 +86,10 @@ if metodo == "Desde Excel":
         st.dataframe(demand)
 elif metodo == "Desde aplicación":
     st.subheader("⚙️ Generador de Demanda")
-    unidad = st.selectbox("Selecciona la Unidad Hospitalaria", ["Medicina Interna", "UCI", "Urgencias", "Oncología", "Quirófano"])
+    unidad = st.selectbox("Selecciona la Unidad Hospitalaria", ["Medicina Interna", "UCI", "Urgencias", "Oncología", "Quirófano"], key="unidad")
     col1, col2 = st.columns(2)
-    fecha_inicio = col1.date_input("Fecha de inicio", value=date(2025, 1, 1))
-    fecha_fin = col2.date_input("Fecha de fin", value=date(2025, 1, 31))
+    fecha_inicio = col1.date_input("Fecha de inicio", value=st.session_state.get("fecha_inicio", date(2025, 1, 1)), key="fecha_inicio")
+    fecha_fin = col2.date_input("Fecha de fin", value=st.session_state.get("fecha_fin", date(2025, 1, 31)), key="fecha_fin")
     fechas = [fecha_inicio + timedelta(days=i) for i in range((fecha_fin - fecha_inicio).days + 1)]
     
     #Aviso rango de fechas erróneo
