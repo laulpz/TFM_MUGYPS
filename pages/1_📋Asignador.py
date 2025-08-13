@@ -128,6 +128,7 @@ if st.sidebar.button("📥 Descargar plantilla de ejemplo"):
 if file_staff:
     st.session_state["file_staff"] = file_staff
     #MOSTRAR EJEMPLO DE PARSING
+    staff["Fechas_No_Disponibilidad"] = staff["Fechas_No_Disponibilidad"].apply(parse_dates)
     sample = staff["Fechas_No_Disponibilidad"].iloc[0] if not staff.empty else []
     st.sidebar.markdown(f"🔍 **Ejemplo de fechas parseadas:**\n`{sample}`")
     #st.info("🛈 Por favor, suba una plantilla de personal para continuar con la planificación.")
