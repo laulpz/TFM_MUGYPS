@@ -1,24 +1,24 @@
 
-# 🩺 Planificador de Turnos de Enfermería – SERMAS
+# 🩺 Planificador de Turnos de Enfermería
 
 Aplicación web interactiva para asignar turnos de enfermería en hospitales públicos del Servicio Madrileño de Salud (SERMAS). Permite automatizar la planificación teniendo en cuenta criterios reales como jornadas, turnos contratados, fechas de no disponibilidad y límites legales de horas.
 
 ## 🚀 Funcionalidades
-
-- Introducción **manual y simple** de la demanda semanal por turnos.
+- **Asignador de Turnos**: Asignación automática basada en disponibilidad, jornadas y límites legales.
+      - Turnos respetando contrato, unidad, jornada y ausencias.
+      - Límite de **8 jornadas consecutivas**.
+      - Control del máximo de horas anuales (1667,5 h diurno, 1490 h nocturno).
 - Selección de **rango de fechas** personalizado (planificación mensual, trimestral, etc.).
-- **Carga de plantilla de personal** en formato Excel.
-- Asignación automática:
-  - Turnos respetando contrato, unidad, jornada y ausencias.
-  - Límite de **8 jornadas consecutivas**.
-  - Control del máximo de horas anuales (1667,5 h diurno, 1490 h nocturno).
+- **Generador de Demanda**: Configuración interactiva de necesidades por unidad y fecha.
+- **Informes**: Visualización y descarga de resúmenes mensuales.
+
 - **Persistencia de datos** en base de datos SQLite local:
   - Registro de asignaciones anteriores.
   - Acumulación de horas por enfermera.
 - Descarga de:
   - 📋 Planilla asignada.
   - ⚠️ Turnos sin cubrir.
-  - 📊 Resumen mensual de horas.
+  - 📊 Resumen de horas.
 
 ## 🧾 Estructura esperada del archivo de plantilla de personal
 
@@ -29,6 +29,17 @@ Aplicación web interactiva para asignar turnos de enfermería en hospitales pú
 
 - `Fechas_No_Disponibilidad`: fechas separadas por coma (puede dejarse vacío).
 - `Turno_Contrato`: solo uno permitido por persona.
+
+## 🛠️ Estructura del Proyecto
+```plaintext
+/pages           # Módulos de la app (Streamlit)
+  - 1_Asignador.py
+  - 2_Generador_Demanda.py
+  - 3_Informe.py
+/utils           # Funciones compartidas (ej: excel_utils.py)
+app.py           # Interfaz principal
+db_manager.py    # Gestión de base de datos
+```
 
 ## 🖥️ Cómo ejecutar
 
@@ -47,10 +58,12 @@ streamlit run app.py
 
 ## 📌 Ejemplo de uso
 
-1. Introduce la demanda semanal para cada turno.
+1. Sube el archivo de personal
 2. Selecciona el rango de fechas a planificar.
-3. Sube el archivo de personal.
-4. Ejecuta la asignación y descarga los archivos generados.
+3. Introduce la demanda para cada turno.
+5. Ejecuta la asignación y aprueba o rechaza la propuesta
+6. Descarga los archivos generados.
+7. Ve a la pestaña Informe para visualizar la asignación en formato más visual
 
 ## 📃 Licencia
 
