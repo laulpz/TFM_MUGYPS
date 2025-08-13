@@ -33,7 +33,7 @@ turnos = ["Mañana", "Tarde", "Noche"]
 
 
 #Títulos y descripción
-st.set_page_config(page_title="📋Asignador", layout="wide")
+st.set_page_config(page_title="Asignador", layout="wide")
 st.title("📋Asignador de Turnos")
 st.markdown("""
     Instrucciones:
