@@ -358,7 +358,7 @@ if st.session_state["asignacion_completada"]:
     if st.button("🔄 Reiniciar aplicación"):
         # Limpiar archivos subidos y datos de demanda
         keys_to_reset = [
-            "file_staff", "df_assign", "df_uncov", "asignacion_completada",
+            "df_assign", "df_uncov", "asignacion_completada",
             "uncovered", "resumen_mensual", "demand", "unidad", "fecha_inicio", "fecha_fin"
         ]
         for key in keys_to_reset:
@@ -372,8 +372,7 @@ if st.session_state["asignacion_completada"]:
             "fecha_fin": date(2025, 1, 31),
         })
         
-        st.session_state["file_staff_uploader"] = None  # Resetear el uploader
-        st.rerun()  # Forzar recarga
+        st.experimental_rerun()  # Forzar recarga
     
 
 st.sidebar.markdown("---")
