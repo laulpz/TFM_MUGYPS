@@ -130,6 +130,7 @@ dias_semana = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", 
 turnos = ["Mañana", "Tarde", "Noche"]
 
 
+
 #Títulos y descripción
 st.set_page_config(page_title="Asignador", layout="wide")
 st.title("📋Asignador de Turnos")
@@ -247,22 +248,59 @@ if file_staff is not None and st.button("3️⃣🚀 Ejecutar asignación"):
     staff["Fechas_No_Disponibilidad"] = staff["Fechas_No_Disponibilidad"].apply(parse_dates)
    
     #Para jornadas parciales definir 80%
-    staff_max_hours = {
-        row.ID: BASE_MAX_HOURS[row.Turno_Contrato] * (0.8 if row.Jornada == "Parcial" else 1)
-        for _, row in staff.iterrows()
-    }
-    staff_max_jornadas = {
-        row.ID: BASE_MAX_JORNADAS[row.Turno_Contrato] * (0.8 if row.Jornada == "Parcial" else 1)
-        for _, row in staff.iterrows()
-    }
+    #staff_max_hours = {
+        #row.ID: BASE_MAX_HOURS[row.Turno_Contrato] * (0.8 if row.Jornada == "Parcial" else 1)
+        #for _, row in staff.iterrows()
+    #}
+    #staff_max_jornadas = {
+        #row.ID: BASE_MAX_JORNADAS[row.Turno_Contrato] * (0.8 if row.Jornada == "Parcial" else 1)
+        #for _, row in staff.iterrows()
+    #}
 
+
+    TURNOS_VALIDOS = {
+    "Mañana": {"horas": 1642.5, "jornadas": 219},
+    "Tarde": {"horas": 1642.5, "jornadas": 219},
+    "Noche": {"horas": 1470, "jornadas": 147}
+    }
+    # Modificar la creación de staff_max_hours y staff_max_jornadas
+    staff_max_hours = {}
+    staff_max_jornadas = {}
+    for _, row in staff.iterrows():
+        try:
+            turno = str(row.Turno_Contrato).strip()
+            jornada = str(row.Jornada).strip() if pd.notna(row.Jornada) else "Completa"
+        
+            # Validar y obtener valores para el turno
+            if turno in TURNOS_VALIDOS:
+                factor = 0.8 if jornada == "Parcial" else 1
+                staff_max_hours[row.ID] = TURNOS_VALIDOS[turno]["horas"] * factor
+                staff_max_jornadas[row.ID] = TURNOS_VALIDOS[turno]["jornadas"] * factor
+            else:
+                st.warning(f"Turno no válido '{turno}' para empleado {row.ID}. Usando valores por defecto.")
+                # Valores por defecto (promedio)
+                staff_max_hours[row.ID] = 1585 * (0.8 if jornada == "Parcial" else 1)
+                staff_max_jornadas[row.ID] = 200 * (0.8 if jornada == "Parcial" else 1)
+        except Exception as e:
+            st.error(f"Error procesando empleado {row.ID}: {str(e)}")
+            # Valores por defecto seguros
+            staff_max_hours[row.ID] = 1585 * 0.8  # Asume jornada parcial por seguridad
+            staff_max_jornadas[row.ID] = 200 * 0.8
+
+
+
+    
     st.markdown("""👩‍⚕️ Personal cargado""")
     st.dataframe(staff)
 
     #Aquí está obviando las horas anteriores. En código 31/07 algo así: 
     #df_prev = cargar_horas()
-    #staff_hours = dict(zip(df_prev["ID"], df_prev["Horas_Acumuladas"])) if not df_prev.empty else {row.ID: 0 for _, row in staff.iterrows()}
-    #staff_jornadas = dict.fromkeys(staff["ID"], 0)
+    staff_hours = dict(zip(df_prev["ID"], df_prev["Horas_Acumuladas"])) if not df_prev.empty else {row.ID: 0 for _, row in staff.iterrows()}
+    staff_jornadas = dict.fromkeys(staff["ID"], 0)
+
+
+
+    
     staff_hours = {row.ID: 0 for _, row in staff.iterrows()}
     staff_dates = {row.ID: [] for _, row in staff.iterrows()}
     assignments, uncovered = [], []
