@@ -176,14 +176,14 @@ file_staff = st.sidebar.file_uploader(
     - Combinaciones separadas por comas"""
 )
 
-if st.sidebar.button("📥 Descargar plantilla de ejemplo"):
-    df_ejemplo = generar_plantilla_ejemplo()
-    st.sidebar.download_button(
-        label="⬇️ Plantilla_Ejemplo.xlsx",
-        data=to_excel_bytes(df_ejemplo),
-        file_name="Plantilla_Turnos_Ejemplo.xlsx",
-        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-    )
+if st.sidebar.download_button(
+    label="📥 Descargar plantilla de ejemplo",
+    data=to_excel_bytes(generar_plantilla_ejemplo()),
+    file_name="Plantilla_Turnos_Ejemplo.xlsx",
+    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    use_container_width=False  # Esto hace el botón más pequeño
+):
+    pass  # Esto es opcional, solo para que no aparezca "None" en el sidebar
 
 if file_staff:
     st.session_state["file_staff"] = file_staff
