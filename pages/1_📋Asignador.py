@@ -129,7 +129,7 @@ st.markdown("""
        - `Turno_Contrato` (`Mañana`, `Tarde` o `Noche`)
        - `Fechas_No_Disponibilidad` (fechas individuales y/o rangos `dd/mm/AAAA` separadas por comas). 
     2. Crea la demanda de turnos en el rango de fechas de interés de una de las siguientes formas:
-        - Sube la demanda de turnos** (`.xlsx`) con las columnas `Fecha`, `Unidad`, `Turno` (`Mañana`/`Tarde`/`Noche`), `Personal_Requerido`
+        - Sube la demanda de turnos (`.xlsx`) con las columnas `Fecha`, `Unidad`, `Turno` (`Mañana`/`Tarde`/`Noche`), `Personal_Requerido`
         - Genera la demanda directamente desde la propia aplicación
     3. Ejecuta la asignación. 
     """)
@@ -156,7 +156,7 @@ st.sidebar.header("1️⃣📂 Sube la plantilla de personal")
 file_staff = st.sidebar.file_uploader(
     "Plantilla de personal (.xlsx)",
     type=["xlsx"],
-    help="""La columna 'Fechas_No_Disponibilidad' puede contener fechas individuales (20/07/2025), rangos (01/02/2025-10/02/2025) o combinaciones de ambas separadas por comas. Ejemplo: 01/07/2025-15/07/2025, 12/10/2025"""
+    help="""La columna 'Fechas_No_Disponibilidad' puede contener fechas individuales (20/07/2025), rangos (01/02/2025-10/02/2025) o combinaciones de ambas separadas por comas (01/07/2025-15/07/2025, 12/10/2025)"""
 )
 
 if st.sidebar.download_button(
