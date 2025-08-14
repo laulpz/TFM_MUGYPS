@@ -199,7 +199,7 @@ if file_staff:
 
     #MOSTRAR EJEMPLO DE PARSING
     sample = staff["Fechas_No_Disponibilidad"].iloc[0] if not staff.empty else []
-    st.sidebar.markdown(f"🔍 **Ejemplo de fechas parseadas:**\n`{sample}`")
+    #st.sidebar.markdown(f"🔍 **Ejemplo de fechas parseadas:**\n`{sample}`")
     #st.info("🛈 Por favor, suba una plantilla de personal para continuar con la planificación.")
     
 #Configurar la demanda de turnos
