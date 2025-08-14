@@ -405,7 +405,7 @@ if st.session_state["asignacion_completada"]:
     uncovered = st.session_state.get("uncovered", [])
     st.success("✅ Asignación completada")
     st.markdown("""🔍Turnos asignados""")
-    st.dataframe(df_assign)
+    st.dataframe(df_assign.assign(Fecha=lambda x: pd.to_datetime(x['Fecha']).dt.strftime('%d/%m/%Y')))
     
     if uncovered:
         df_uncov = pd.DataFrame(uncovered)
