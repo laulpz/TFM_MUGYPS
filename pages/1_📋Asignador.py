@@ -189,7 +189,31 @@ if file_staff:
     st.session_state["file_staff"] = file_staff
     staff = pd.read_excel(file_staff)
     staff.columns = staff.columns.str.strip()
+
+    # Validar columnas requeridas
+    required_columns = ["ID", "Unidad_Asignada", "Jornada", "Turno_Contrato", "Fechas_No_Disponibilidad"]
+    if not all(col in staff.columns for col in required_columns):
+        missing = [col for col in required_columns if col not in staff.columns]
+        st.error(f"Faltan columnas requeridas: {', '.join(missing)}")
+        st.stop()
+
+    # Limpieza y validación de datos
+    staff = staff.dropna(subset=["ID", "Turno_Contrato"])  # Eliminar filas sin ID o Turno
+    #Normalización de valores
+    staff["Turno_Contrato"] = staff["Turno_Contrato"].astype(str).str.strip().str.capitalize()
+    staff["Jornada"] = staff["Jornada"].astype(str).str.strip().str.capitalize()
+    
+    # Validar valores aceptados
+    valid_turnos = ["Mañana", "Tarde", "Noche"]
+    invalid_turnos = staff[~staff["Turno_Contrato"].isin(valid_turnos)]
+    
+    if not invalid_turnos.empty:
+        st.warning(f"Se encontraron turnos no válidos: {invalid_turnos['Turno_Contrato'].unique()}")
+        staff = staff[staff["Turno_Contrato"].isin(valid_turnos)]  # Filtrar solo turnos válidos
+    
+    # Procesar fechas
     staff["Fechas_No_Disponibilidad"] = staff["Fechas_No_Disponibilidad"].apply(parse_dates)
+
     #MOSTRAR EJEMPLO DE PARSING
     sample = staff["Fechas_No_Disponibilidad"].iloc[0] if not staff.empty else []
     st.sidebar.markdown(f"🔍 **Ejemplo de fechas parseadas:**\n`{sample}`")
