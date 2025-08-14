@@ -18,7 +18,6 @@ def to_excel_bytes(df):
         df.to_excel(writer, index=False)
     return output.getvalue()
 
-
 def parse_dates(cell):
     """
     Parsea fechas de no disponibilidad en varios formatos a lista de strings 'YYYY-MM-DD'.
@@ -30,7 +29,6 @@ def parse_dates(cell):
             return str(value).strip()
         except:
             return ""
-
     def try_parse_date(date_str):
         """Intenta parsear una fecha en múltiples formatos"""
         date_str = safe_str_convert(date_str)
@@ -40,25 +38,21 @@ def parse_dates(cell):
             except ValueError:
                 continue
         return None
-
     # Caso 1: Valor es None, NaN, vacío o cualquier tipo inesperado
     try:
         if pd.isna(cell) or cell is None or not safe_str_convert(cell):
             return []
     except Exception:
         return []
-
     # Caso 2: Si ya es una lista válida
     if isinstance(cell, list):
         try:
             return sorted(list(set(cell)))  # Eliminar duplicados y ordenar
         except:
             return []
-
     # Procesamiento principal
     dates = set()
     content = safe_str_convert(cell)
-    
     try:
         # Caso 3: Timestamp de pandas (ej: '2025-04-14 00:00:00')
         if " " in content and "-" in content and ":" in content:
@@ -68,10 +62,8 @@ def parse_dates(cell):
                 return [date_obj.strftime("%Y-%m-%d")]
             except:
                 pass
-
         # Dividir por comas y procesar cada parte
         parts = [part.strip() for part in content.split(",") if part.strip()]
-        
         for part in parts:
             # Manejar rangos (contiene '-')
             if "-" in part:
@@ -80,12 +72,10 @@ def parse_dates(cell):
                     start, end = map(safe_str_convert, range_parts)
                     start_date = try_parse_date(start)
                     end_date = try_parse_date(end)
-                    
                     if start_date and end_date:
                         if start_date > end_date:
                             st.warning(f"Rango inválido: {start} > {end}")
                             continue
-                            
                         current = start_date
                         while current <= end_date:
                             dates.add(current.strftime("%Y-%m-%d"))
@@ -101,13 +91,10 @@ def parse_dates(cell):
                     dates.add(date_obj.strftime("%Y-%m-%d"))
                 else:
                     st.warning(f"Formato de fecha no reconocido: '{part}'")
-
         return sorted(list(dates))
-    
     except Exception as e:
         st.error(f"Error procesando: '{content}'. Se omitirá esta entrada.")
         return []
-
 
 def generar_plantilla_ejemplo():
     data = {
@@ -128,7 +115,6 @@ BASE_MAX_HOURS = {"Mañana": 1642.5, "Tarde": 1642.5, "Noche": 1470}
 BASE_MAX_JORNADAS = {"Mañana": 219, "Tarde": 219, "Noche": 147}
 dias_semana = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"]
 turnos = ["Mañana", "Tarde", "Noche"]
-
 
 
 #Títulos y descripción
@@ -171,10 +157,9 @@ file_staff = st.sidebar.file_uploader(
     "Plantilla de personal (.xlsx)",
     type=["xlsx"],
     help="""La columna 'Fechas_No_Disponibilidad' puede contener:
-        - Fechas individuales (20/07/2025)
-        - Rangos (01/02/2025-10/02/2025)
-        - Combinaciones separadas por comas
-    Ejemplo: 01/07/2025-15/07/2025, 12/10/2025"""
+       - Fechas individuales (20/07/2025)
+       - Rangos (01/02/2025-10/02/2025)
+       - Combinaciones separadas por comas. Ejemplo: 01/07/2025-15/07/2025, 12/10/2025"""
 )
 
 if st.sidebar.download_button(
@@ -184,7 +169,7 @@ if st.sidebar.download_button(
     mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     use_container_width=False  # Esto hace el botón más pequeño
 ):
-    pass  # Esto es opcional, solo para que no aparezca "None" en el sidebar
+    pass  # Para que no aparezca "None" en el sidebar
 
 if file_staff:
     st.session_state["file_staff"] = file_staff
@@ -222,9 +207,8 @@ if file_staff:
     
 #Configurar la demanda de turnos
 st.sidebar.header("2️⃣📈 Selecciona el Método para ingresar demanda:")
-metodo = st.sidebar.selectbox("Selecciona una opción. Generar desde la aplicación se muestra por defecto", ["Desde aplicación","Desde Excel"],
-                              help="""La columna 'Fechas_No_Disponibilidad' puede contener:
-                            - Fechas individuales (20/07/2025)""")
+metodo = st.sidebar.selectbox("Generar desde la aplicación se muestra por defecto", ["Desde aplicación","Desde Excel"],
+                              help="""El Excel debe contener)""")
 demand = None
 if metodo == "Desde Excel":
     file_demand = st.sidebar.file_uploader("Demanda de turnos (.xlsx)", type=["xlsx"])
@@ -270,15 +254,6 @@ elif metodo == "Desde aplicación":
 
 #Ejecutar asignación
 if file_staff is not None and st.button("3️⃣🚀 Ejecutar asignación"):
-    #Para jornadas parciales definir 80%
-    #staff_max_hours = {
-        #row.ID: BASE_MAX_HOURS[row.Turno_Contrato] * (0.8 if row.Jornada == "Parcial" else 1)
-        #for _, row in staff.iterrows()
-    #}
-    #staff_max_jornadas = {
-        #row.ID: BASE_MAX_JORNADAS[row.Turno_Contrato] * (0.8 if row.Jornada == "Parcial" else 1)
-        #for _, row in staff.iterrows()
-    #}
     TURNOS_VALIDOS = {
     "Mañana": {"horas": 1642.5, "jornadas": 219},
     "Tarde": {"horas": 1642.5, "jornadas": 219},
@@ -310,14 +285,10 @@ if file_staff is not None and st.button("3️⃣🚀 Ejecutar asignación"):
     
     st.markdown("""👩‍⚕️ Personal cargado""")
     st.dataframe(staff)
-
     #Aquí está obviando las horas anteriores. En código 31/07 algo así: 
     #df_prev = cargar_horas()
     #staff_hours = dict(zip(df_prev["ID"], df_prev["Horas_Acumuladas"])) if not df_prev.empty else {row.ID: 0 for _, row in staff.iterrows()}
     #staff_jornadas = dict.fromkeys(staff["ID"], 0)
-
-
-
     
     staff_hours = {row.ID: 0 for _, row in staff.iterrows()}
     staff_dates = {row.ID: [] for _, row in staff.iterrows()}
@@ -416,7 +387,7 @@ if file_staff is not None and st.button("3️⃣🚀 Ejecutar asignación"):
         "asignacion_completada": True,
         "df_assign": df_assign,
         "df_uncov": pd.DataFrame(uncovered) if uncovered else None,
-        "uncovered": uncovered  # Nueva línea
+        "uncovered": uncovered 
     })
 
     df_assign["Fecha"] = pd.to_datetime(df_assign["Fecha"])
@@ -478,9 +449,8 @@ if st.session_state["asignacion_completada"]:
             #st.write("Primeras filas:", df_to_save.head())
             guardar_asignaciones(df_to_save)
             guardar_resumen_mensual(st.session_state["resumen_mensual"])
-            #st.success("✅ Datos guardados correctamente")
             subir_bd_a_drive(FILE_ID)
-            st.success("📥 Datos guardados en la base de datos correctamente.")
+            st.success("✅ Datos guardados en la base de datos correctamente.")
         except Exception as e:
             st.error(f"❌ Error al guardar: {str(e)}")
 
@@ -488,7 +458,6 @@ if st.session_state["asignacion_completada"]:
             st.error("No se encontró el resumen mensual")
             st.stop()
 
-   
         # Obtener unidad y fechas de la demanda
         if metodo == "Desde Excel":
             if demand is not None and not demand.empty:
@@ -529,9 +498,6 @@ if st.session_state["asignacion_completada"]:
         st.rerun()
         #st.experimental_rerun()
 
-
-
-
     if st.button("🔄 Reiniciar aplicación"):
         # Limpiar archivos subidos y datos de demanda
         keys_to_reset = [
@@ -541,16 +507,13 @@ if st.session_state["asignacion_completada"]:
         for key in keys_to_reset:
             if key in st.session_state:
                 del st.session_state[key]
-    
         # Resetear valores por defecto del generador de demanda
         st.session_state.update({
             "unidad": "Medicina Interna",  # Valor por defecto
             "fecha_inicio": date(2025, 1, 1),
             "fecha_fin": date(2025, 1, 31),
         })
-    
         st.rerun()  # Forzar recarga
-    
 
 st.sidebar.markdown("---")
 if st.sidebar.button("🗑️ Resetear base de datos"):
