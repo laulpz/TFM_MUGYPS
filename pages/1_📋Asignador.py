@@ -286,23 +286,21 @@ if file_staff is not None and st.button("3️⃣🚀 Ejecutar asignación"):
             # Valores por defecto seguros
             staff_max_hours[row.ID] = 1585 * 0.8  # Asume jornada parcial por seguridad
             staff_max_jornadas[row.ID] = 200 * 0.8
-
-
-
     
     st.markdown("""👩‍⚕️ Personal cargado""")
     st.dataframe(staff)
 
     #Aquí está obviando las horas anteriores. En código 31/07 algo así: 
     #df_prev = cargar_horas()
-    staff_hours = dict(zip(df_prev["ID"], df_prev["Horas_Acumuladas"])) if not df_prev.empty else {row.ID: 0 for _, row in staff.iterrows()}
-    staff_jornadas = dict.fromkeys(staff["ID"], 0)
+    #staff_hours = dict(zip(df_prev["ID"], df_prev["Horas_Acumuladas"])) if not df_prev.empty else {row.ID: 0 for _, row in staff.iterrows()}
+    #staff_jornadas = dict.fromkeys(staff["ID"], 0)
 
 
 
     
     staff_hours = {row.ID: 0 for _, row in staff.iterrows()}
     staff_dates = {row.ID: [] for _, row in staff.iterrows()}
+    staff_jornadas = {row.ID: 0 for _, row in staff.iterrows()}  # Inicialización adicional para jornadas
     assignments, uncovered = [], []
 
     if demand is None:
