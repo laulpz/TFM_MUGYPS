@@ -141,10 +141,10 @@ st.markdown("""
        - `Unidad_Asignada`
        - `Jornada` (`Completa`/`Parcial`)
        - `Turno_Contrato` (`Mañana`, `Tarde` o `Noche`)
-       - `Fechas_No_Disponibilidad` (lista `YYYY-MM-DD` separadas por comas)
+       - `Fechas_No_Disponibilidad` (fechas individuales o rangos `dd/mm/AAAA` separadas por comas). Ejemplo: 01/07/2025-15/07/2025, 12/10/2025
     2. Crea la demanda de turnos en el rango de fechas de interés de una de las siguientes formas:
-        - Suba la demanda de turnos** (`.xlsx`) con las columnas `Fecha`, `Unidad`, `Turno` (`Mañana`/`Tarde`/`Noche`), `Personal_Requerido`
-        - Genere la demanda directamente desde la propia aplicación
+        - Sube la demanda de turnos** (`.xlsx`) con las columnas `Fecha`, `Unidad`, `Turno` (`Mañana`/`Tarde`/`Noche`), `Personal_Requerido`
+        - Genera la demanda directamente desde la propia aplicación
     3. Ejecuta la asignación. 
     """)
 
@@ -171,9 +171,10 @@ file_staff = st.sidebar.file_uploader(
     "Plantilla de personal (.xlsx)",
     type=["xlsx"],
     help="""La columna 'Fechas_No_Disponibilidad' puede contener:
-    - Fechas individuales (20/07/2025)
-    - Rangos (01/02/2025-10/02/2025)
-    - Combinaciones separadas por comas"""
+        - Fechas individuales (20/07/2025)
+        - Rangos (01/02/2025-10/02/2025)
+        - Combinaciones separadas por comas
+    Ejemplo: 01/07/2025-15/07/2025, 12/10/2025"""
 )
 
 if st.sidebar.download_button(
@@ -221,7 +222,9 @@ if file_staff:
     
 #Configurar la demanda de turnos
 st.sidebar.header("2️⃣📈 Selecciona el Método para ingresar demanda:")
-metodo = st.sidebar.selectbox("Selecciona una opción. Generar desde la aplicación se muestra por defecto", ["Desde aplicación","Desde Excel"])
+metodo = st.sidebar.selectbox("Selecciona una opción. Generar desde la aplicación se muestra por defecto", ["Desde aplicación","Desde Excel"],
+                              help="""La columna 'Fechas_No_Disponibilidad' puede contener:
+                            - Fechas individuales (20/07/2025)""")
 demand = None
 if metodo == "Desde Excel":
     file_demand = st.sidebar.file_uploader("Demanda de turnos (.xlsx)", type=["xlsx"])
