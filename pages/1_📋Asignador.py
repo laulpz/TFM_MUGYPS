@@ -233,14 +233,9 @@ if metodo == "Desde Excel":
 elif metodo == "Desde aplicación":
     st.subheader("⚙️ Generador de Demanda")
     unidad = st.selectbox("Selecciona la Unidad Hospitalaria", ["Medicina Interna", "UCI", "Urgencias", "Oncología", "Quirófano"])
-    def format_date(d):
-        return d.strftime("%d/%m/%Y")
     col1, col2 = st.columns(2)
     fecha_inicio = col1.date_input("Fecha de inicio", value=date(2025, 1, 1))
     fecha_fin = col2.date_input("Fecha de fin", value=date(2025, 1, 31))
-    # Mostrar las fechas formateadas
-    st.write(f"Fecha inicio: {format_date(fecha_inicio)}")
-    st.write(f"Fecha fin: {format_date(fecha_fin)}")
     fechas = [fecha_inicio + timedelta(days=i) for i in range((fecha_fin - fecha_inicio).days + 1)]
     
     #Aviso rango de fechas erróneo
