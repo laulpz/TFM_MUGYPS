@@ -7,7 +7,7 @@ from db_manager import (
     init_db, guardar_asignaciones, guardar_resumen_mensual,
     descargar_bd_desde_drive, subir_bd_a_drive, reset_db
 )
-import locale
+from streamlit_date_picker import date_picker
 
 #Definir funciones necesarias
 def to_excel_bytes(df):
@@ -234,14 +234,14 @@ if metodo == "Desde Excel":
 elif metodo == "Desde aplicación":
     st.subheader("⚙️ Generador de Demanda")
     unidad = st.selectbox("Selecciona la Unidad Hospitalaria", ["Medicina Interna", "UCI", "Urgencias", "Oncología", "Quirófano"])
-    # Configurar el locale a español
-    try:
-        locale.setlocale(locale.LC_TIME, 'es_ES.UTF-8')
-    except:
-        locale.setlocale(locale.LC_TIME, 'spanish')
     col1, col2 = st.columns(2)
-    fecha_inicio = col1.date_input("Fecha de inicio", value=date(2025, 1, 1))
-    fecha_fin = col2.date_input("Fecha de fin", value=date(2025, 1, 31))
+    with col1:
+        fecha_inicio = date_picker("Fecha de inicio", value=date(2025, 1, 1), format="DD/MM/YYYY")
+    with col2:
+        fecha_fin = date_picker("Fecha de fin", value=date(2025, 1, 31), format="DD/MM/YYYY")
+    #col1, col2 = st.columns(2)
+    #fecha_inicio = col1.date_input("Fecha de inicio", value=date(2025, 1, 1))
+    #fecha_fin = col2.date_input("Fecha de fin", value=date(2025, 1, 31))
     fechas = [fecha_inicio + timedelta(days=i) for i in range((fecha_fin - fecha_inicio).days + 1)]
     
     #Aviso rango de fechas erróneo
