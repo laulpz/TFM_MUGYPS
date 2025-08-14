@@ -167,7 +167,6 @@ if "file_staff" not in st.session_state:
 
 #Subida plantilla de personal. 10/08 añadido if para st.session_state
 st.sidebar.header("1️⃣📂 Sube la plantilla de personal")
-#file_staff = st.sidebar.file_uploader("Plantilla de personal en formato .xlsx)", type=["xlsx"])
 file_staff = st.sidebar.file_uploader(
     "Plantilla de personal (.xlsx)",
     type=["xlsx"],
@@ -187,7 +186,6 @@ if st.sidebar.button("📥 Descargar plantilla de ejemplo"):
     )
 
 if file_staff:
-    
     st.session_state["file_staff"] = file_staff
     staff = pd.read_excel(file_staff)
     staff.columns = staff.columns.str.strip()
@@ -245,8 +243,6 @@ elif metodo == "Desde aplicación":
 
 #Ejecutar asignación
 if file_staff is not None and st.button("3️⃣🚀 Ejecutar asignación"):
-    staff["Fechas_No_Disponibilidad"] = staff["Fechas_No_Disponibilidad"].apply(parse_dates)
-   
     #Para jornadas parciales definir 80%
     #staff_max_hours = {
         #row.ID: BASE_MAX_HOURS[row.Turno_Contrato] * (0.8 if row.Jornada == "Parcial" else 1)
@@ -256,8 +252,6 @@ if file_staff is not None and st.button("3️⃣🚀 Ejecutar asignación"):
         #row.ID: BASE_MAX_JORNADAS[row.Turno_Contrato] * (0.8 if row.Jornada == "Parcial" else 1)
         #for _, row in staff.iterrows()
     #}
-
-
     TURNOS_VALIDOS = {
     "Mañana": {"horas": 1642.5, "jornadas": 219},
     "Tarde": {"horas": 1642.5, "jornadas": 219},
