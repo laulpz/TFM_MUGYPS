@@ -177,7 +177,7 @@ file_staff = st.sidebar.file_uploader(
 )
 
 if st.sidebar.download_button(
-    label="📥 Descargar",
+    label="📥 Ejemplo de plantilla",
     data=to_excel_bytes(generar_plantilla_ejemplo()),
     file_name="Plantilla_Turnos_Ejemplo.xlsx",
     mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
