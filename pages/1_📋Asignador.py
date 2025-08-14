@@ -7,6 +7,7 @@ from db_manager import (
     init_db, guardar_asignaciones, guardar_resumen_mensual,
     descargar_bd_desde_drive, subir_bd_a_drive, reset_db
 )
+import locale
 
 #Definir funciones necesarias
 def to_excel_bytes(df):
@@ -233,6 +234,11 @@ if metodo == "Desde Excel":
 elif metodo == "Desde aplicación":
     st.subheader("⚙️ Generador de Demanda")
     unidad = st.selectbox("Selecciona la Unidad Hospitalaria", ["Medicina Interna", "UCI", "Urgencias", "Oncología", "Quirófano"])
+    # Configurar el locale a español
+    try:
+        locale.setlocale(locale.LC_TIME, 'es_ES.UTF-8')
+    except:
+        locale.setlocale(locale.LC_TIME, 'spanish')
     col1, col2 = st.columns(2)
     fecha_inicio = col1.date_input("Fecha de inicio", value=date(2025, 1, 1))
     fecha_fin = col2.date_input("Fecha de fin", value=date(2025, 1, 31))
