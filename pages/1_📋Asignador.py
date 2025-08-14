@@ -21,8 +21,13 @@ def to_excel_bytes(df):
 
 def parse_dates(cell):
     """
-    Parsea fechas de no disponibilidad en varios formatos a lista de strings 'YYYY-MM-DD'.
-    Maneja todos los casos posibles de forma segura.
+    Parsea una celda con fechas de no disponibilidad a lista de strings YYYY-MM-DD.
+    
+    Ejemplos:
+    >>> parse_dates("2023-01-01, 2023-01-02")
+    ['2023-01-01', '2023-01-02']
+    >>> parse_dates("2023-01-01-2023-01-05")
+    ['2023-01-01', '2023-01-02', '2023-01-03', '2023-01-04', '2023-01-05']
     """
     def safe_str_convert(value):
         """Conversión segura a string"""
@@ -122,6 +127,37 @@ def generar_plantilla_ejemplo():
     }
     return pd.DataFrame(data)
 
+def validate_staff_data(staff):
+    """Validación exhaustiva de los datos del personal"""
+    required_columns = ["ID", "Unidad_Asignada", "Jornada", "Turno_Contrato", "Fechas_No_Disponibilidad"]
+    
+    # Verificar columnas requeridas
+    missing = [col for col in required_columns if col not in staff.columns]
+    if missing:
+        raise ValueError(f"Columnas requeridas faltantes: {', '.join(missing)}")
+    
+    # Verificar valores nulos en campos críticos
+    critical_cols = ["ID", "Turno_Contrato"]
+    if staff[critical_cols].isnull().any().any():
+        raise ValueError("Existen valores nulos en columnas críticas (ID o Turno_Contrato)")
+    
+    # Validar valores de Jornada
+    valid_jornadas = ["Completa", "Parcial"]
+    invalid_jornadas = staff[~staff["Jornada"].isin(valid_jornadas)]
+    if not invalid_jornadas.empty:
+        raise ValueError(f"Valores no válidos en Jornada: {invalid_jornadas['Jornada'].unique()}")
+    
+    # Validar valores de Turno
+    valid_turnos = ["Mañana", "Tarde", "Noche"]
+    invalid_turnos = staff[~staff["Turno_Contrato"].isin(valid_turnos)]
+    if not invalid_turnos.empty:
+        raise ValueError(f"Valores no válidos en Turno_Contrato: {invalid_turnos['Turno_Contrato'].unique()}")
+    
+    return True
+
+
+
+
 #Inicialización de variables
 SHIFT_HOURS = {"Mañana": 7.5, "Tarde": 7.5, "Noche": 10}
 BASE_MAX_HOURS = {"Mañana": 1642.5, "Tarde": 1642.5, "Noche": 1470}
@@ -186,38 +222,31 @@ if st.sidebar.button("📥 Descargar plantilla de ejemplo"):
     )
 
 if file_staff:
-    st.session_state["file_staff"] = file_staff
-    staff = pd.read_excel(file_staff)
-    staff.columns = staff.columns.str.strip()
+    try:
+        st.session_state["file_staff"] = file_staff
+        staff = pd.read_excel(file_staff)
+        staff.columns = staff.columns.str.strip()
+        # Validación exhaustiva de columnas del Excel
+        validate_staff_data(staff)
 
-    # Validar columnas requeridas
-    required_columns = ["ID", "Unidad_Asignada", "Jornada", "Turno_Contrato", "Fechas_No_Disponibilidad"]
-    if not all(col in staff.columns for col in required_columns):
-        missing = [col for col in required_columns if col not in staff.columns]
-        st.error(f"Faltan columnas requeridas: {', '.join(missing)}")
-        st.stop()
+        # Limpieza y validación de datos
+        staff = staff.dropna(subset=["ID", "Turno_Contrato"])  # Eliminar filas sin ID o Turno
+        #Normalización de valores
+        staff["Turno_Contrato"] = staff["Turno_Contrato"].astype(str).str.strip().str.capitalize()
+        staff["Jornada"] = staff["Jornada"].astype(str).str.strip().str.capitalize()
 
-    # Limpieza y validación de datos
-    staff = staff.dropna(subset=["ID", "Turno_Contrato"])  # Eliminar filas sin ID o Turno
-    #Normalización de valores
-    staff["Turno_Contrato"] = staff["Turno_Contrato"].astype(str).str.strip().str.capitalize()
-    staff["Jornada"] = staff["Jornada"].astype(str).str.strip().str.capitalize()
-    
-    # Validar valores aceptados
-    valid_turnos = ["Mañana", "Tarde", "Noche"]
-    invalid_turnos = staff[~staff["Turno_Contrato"].isin(valid_turnos)]
-    
-    if not invalid_turnos.empty:
-        st.warning(f"Se encontraron turnos no válidos: {invalid_turnos['Turno_Contrato'].unique()}")
-        staff = staff[staff["Turno_Contrato"].isin(valid_turnos)]  # Filtrar solo turnos válidos
-    
-    # Procesar fechas
-    staff["Fechas_No_Disponibilidad"] = staff["Fechas_No_Disponibilidad"].apply(parse_dates)
+        # Procesar fechas con manejo de errores
+            try:
+                staff["Fechas_No_Disponibilidad"] = staff["Fechas_No_Disponibilidad"].apply(parse_dates)
+            except Exception as e:
+                st.error(f"Error procesando fechas: {str(e)}")
+                st.stop()
+            
+        except Exception as e:
+            st.error(f"Error al procesar archivo de personal: {str(e)}")
+            st.stop()
 
-    #MOSTRAR EJEMPLO DE PARSING
-    sample = staff["Fechas_No_Disponibilidad"].iloc[0] if not staff.empty else []
-    st.sidebar.markdown(f"🔍 **Ejemplo de fechas parseadas:**\n`{sample}`")
-    #st.info("🛈 Por favor, suba una plantilla de personal para continuar con la planificación.")
+
     
 #Configurar la demanda de turnos
 st.sidebar.header("2️⃣📈 Selecciona el Método para ingresar demanda:")
@@ -326,7 +355,12 @@ if file_staff is not None and st.button("3️⃣🚀 Ejecutar asignación"):
         st.stop()
 
     if not all(col in demand.columns for col in ["Fecha", "Unidad", "Turno", "Personal_Requerido"]):
-        st.error("❌ La demanda debe contener las columnas: Fecha, Unidad, Turno, Personal_Requerido")
+        st.error("""
+        ❌ Error en el formato de la demanda:
+        - El archivo debe contener las columnas: Fecha, Unidad, Turno, Personal_Requerido
+        - Asegúrese de que los nombres de las columnas coincidan exactamente
+        - Verifique que no haya filas vacías
+        """)
         st.stop()
 
     demand_sorted = demand.sort_values(by="Fecha")
