@@ -236,15 +236,15 @@ if file_staff:
         staff["Jornada"] = staff["Jornada"].astype(str).str.strip().str.capitalize()
 
         # Procesar fechas con manejo de errores
-            try:
-                staff["Fechas_No_Disponibilidad"] = staff["Fechas_No_Disponibilidad"].apply(parse_dates)
-            except Exception as e:
-                st.error(f"Error procesando fechas: {str(e)}")
-                st.stop()
-            
+        try:
+            staff["Fechas_No_Disponibilidad"] = staff["Fechas_No_Disponibilidad"].apply(parse_dates)
         except Exception as e:
-            st.error(f"Error al procesar archivo de personal: {str(e)}")
+            st.error(f"Error procesando fechas: {str(e)}")
             st.stop()
+            
+    except Exception as e:
+        st.error(f"Error al procesar archivo de personal: {str(e)}")
+        st.stop()
 
 
     
