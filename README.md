@@ -7,7 +7,8 @@ Aplicación web interactiva para asignar turnos de enfermería en hospitales pú
 - **Asignador de Turnos**: Asignación automática basada en disponibilidad, jornadas y límites legales.
   - Turnos respetando contrato, unidad, jornada y ausencias.
   - Límite de **8 jornadas consecutivas**.
-  - Control del máximo de horas anuales (1667,5 h diurno, 1490 h nocturno).
+  - Control del máximo de horas anuales (1642,5 h diurno, 1470 h nocturno).
+  - Descansos de al menos 12 horas entre turnos
 - Selección de **rango de fechas** personalizado (planificación mensual, trimestral, etc.).
 - **Generador de Demanda**: Configuración interactiva de necesidades por unidad y fecha.
 - **Informes**: Visualización y descarga de resúmenes por profesional.
